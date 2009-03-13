@@ -42,12 +42,21 @@ verifica_sujeito(Sujeito):-
 
 ln(Frase):-
     transf_lista(Frase,LPal),
-	( verifica_frase_afirmativa(LPal,[]);
-		( erro(semantico),write('Erro semântico!'),
-		    assert(resultado('Erro semântico'));
+	( verifica_frase(LPal,[]);
+		( erro(semantico),write('Erro semântico!'),assert(resultado('Erro semântico'));
 		  (write('Erro sintático!'),assert(resultado('Erro sintático')))
 		)
 	).
+
+verifica_frase -->
+    verifica_frase_afirmativa;
+    verifica_frase_interrogativa.
+
+verifica_frase_interrogativa -->
+    pron_int,
+    sintagma_verbal(_,Sujeito,Accao,Objecto),
+    {resposta_interrogacao(Accao,Objecto)}.
+
 
 verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
@@ -55,35 +64,39 @@ verifica_frase_afirmativa -->
     {resposta(Sujeito,Accao,Objecto)}.
 
 sintagma_nominal(G-N,Sujeito) -->
+    det(G-N),
     nome(G-N,Sujeito).
 
 sintagma_nominal(G-N,Sujeito) -->
-    det(G-N),
     nome(G-N,Sujeito).
 
 sintagma_verbal(N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
-    complemento_directo(N,Objecto).
+    sintagma_nominal(_,_),
+    sintagma_prep(Objecto).
 
-% Ex.: o prémio de melhor mistura de som
-complemento_directo(N,Objecto) -->
-    det(G-N),
-	nome(G-N,_),
-    prop(_),
-    nome(_-N,Objecto).
+sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+    verbo(N,Sujeito,Accao),
+    sintagma_nominal(_,Objecto).
 
-% Ex.:a melhor mistura de som
-complemento_directo(N,Objecto) -->
-    det(G-N),
-	nome(G-N,Object).
+sintagma_prep(Objecto) -->
+    prep(G-N),
+    sintagma_nominal(G-N,Objecto).
 
 % RESPOSTAS
 
 resposta(Sujeito,Accao,Objecto):-
-    (Facto=..[Accao,Sujeito,Objecto],
+    (Facto=..[Accao,Sujeito,Objecto,_],
     Facto,
     write('Sim'),assert(resultado('Sim')));
     write('Não'),assert(resultado('Não')).
+
+resposta_interrogacao(Accao,Objecto):-
+    (Facto=..[Accao,Sujeito,Objecto,Nome],
+    Facto,
+    write(Nome),assert(resultado(Nome)));
+    write('Sem Resultados'),assert(resultado('Sem Resultados')).
+
 
 % GRAMÁTICA
 
@@ -92,14 +105,17 @@ det(m-p) --> ['Os'];[os].
 det(f-s) --> ['A'];[a].
 det(f-p) --> ['As'];[as].
 
-prop(m-s) --> ['Ao'];[ao].
-prop(f-s) --> ['À'];[à].
-prop(_-_) --> ['de'].
+prep(m-s) --> ['Ao'];[ao].
+prep(f-s) --> ['À'];[à].
+prep(_) --> ['De'];[de].
+
+pron_int --> ['Quem'];['quem'].
 
 verbo(s,Sujeito,ganhar) --> [ganhou],{verifica_sujeito(Sujeito);assert(erro(semantico)),fail}.
 
 % Filmes
-nome(m-s,thedarkknight) --> ['The', 'Dark', 'Knight'].
+nome(m-s,thedarkknight) --> ['The','Dark','Knight'].
+nome(m-s,nocountryforoldmen) --> ['No','Country',for,'Old','Men'].
 
 % Actores
 nome(m-s, danieldaylewis) --> ['Daniel', 'Day-Lewis'].
@@ -108,11 +124,18 @@ nome(m-s, danieldaylewis) --> ['Daniel', 'Day-Lewis'].
 nome(p-s, irmaoscoen) --> [irmãos, 'Coen'];['Irmãos', 'Coen'].
 
 % Prémios
-nome(m-s,melhorfilme) --> [melhor, filme];['Melhor', 'Filme'].
-nome(m-s,melhorrealizador) --> [melhor, realizador];['Melhor', 'Realizador'].
-nome(m-s,melhoractor) --> [melhor, actor];['Melhor', 'Actor'].
-nome(f-s,melhoractriz) --> [melhor, actriz];['Melhor', 'Actriz'].
-nome(f-s,melhormisturasom) --> [melhor, mistura, de, som];['Melhor', 'Mistura', de, 'Som'].
+nome(m-s,melhorfilme) --> [melhor,filme].
+nome(m-s,melhorrealizador) --> [melhor,realizador].
+nome(m-s,melhoractor) --> [melhor,actor].
+nome(f-s,melhoractriz) --> [melhor,actriz].
+nome(m-s,melhoractorsec) --> [melhor,actor,secundário].
+nome(f-s,melhoractrizsec) --> [melhor,actriz,secundária].
+nome(m-s,melhorargorig) --> [melhor,argumento,original].
+nome(m-s,melhorargadapt) --> [melhor,argumento,adaptado].
+nome(m-s,melhorfilmeanim) --> [melhor,filme,de,animação].
+nome(m-s,melhorfilmelingestr) --> [melhor,filme,em,lingua,estrangeira].
+nome(f-s,melhorfotografia) --> [melhor,fotografia].
+nome(f-s,melhormisturasom) --> [melhor,mistura,de,som].
 
 % Vocabulário geral
 nome(m-s,premio) --> [prémio].
@@ -121,6 +144,10 @@ nome(m-s,premio) --> [prémio].
 
 % Filmes
 filme(thedarkknight).
+filme(juno).
+filme(michaelclayton).
+filme(therewillbeblood).
+filme(nocountryforoldmen).
 
 % Actores
 actor(danieldaylewis).
@@ -129,5 +156,13 @@ actor(danieldaylewis).
 realizador(irmaoscoen).
 
 % Prémios
-ganhar(thedarkknight,melhormisturasom).
-ganhar(danieldaylewis,melhorrealizador).
+ganhar(nocountryforoldmen,melhorfilme,'No Country for Old Men').
+ganhar(danieldaylewis,melhorrealizador,'Daniel Day-Lewis').
+ganhar(thedarkknight,melhormisturasom,'The Dark Knight').
+
+% Nomeados
+nomeado(atonement,melhorfilme).
+nomeado(juno,melhorfilme).
+nomeado(michaelclayton,melhorfilme).
+nomeado(therewillbeblood,melhorfilme).
+nomeado(nocountryforoldmen,melhorfilme).
