@@ -23,7 +23,7 @@ public class PLCom {
 	}
 
 	public void interrogate(String question) {
-		if (question.endsWith("."))
+		if (question.endsWith(".") || question.endsWith("?"))
             question = question.substring(0, question.length()-1);
         simpleQuery("ln('" + question + "')");
 	}
