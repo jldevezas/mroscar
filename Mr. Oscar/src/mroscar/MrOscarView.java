@@ -11,6 +11,7 @@ import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import javax.swing.Timer;
@@ -126,6 +127,7 @@ public class MrOscarView extends FrameView {
 
         jTextAreaReply.setColumns(20);
         jTextAreaReply.setEditable(false);
+        jTextAreaReply.setLineWrap(true);
         jTextAreaReply.setRows(5);
         jTextAreaReply.setFocusable(false);
         jTextAreaReply.setName("jTextAreaReply"); // NOI18N
@@ -225,7 +227,8 @@ public class MrOscarView extends FrameView {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextFieldQuestionKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldQuestionKeyPressed
-        String input, output;
+        String input;
+        ArrayList<String> output;
 
         switch (evt.getKeyCode()) {
             case KeyEvent.VK_ENTER:
@@ -238,7 +241,9 @@ public class MrOscarView extends FrameView {
                 jTextFieldQuestion.setText("");
 
                 output = pl.getResult();
-                jTextAreaReply.append(output.substring(1, output.length()-1) + "\n");
+                for (int i=0; i < output.size(); i++)
+                    jTextAreaReply.append(output.get(i).substring(1,
+                            output.get(i).length()-1) + (i == output.size()-1 ? "\n\n" : ", "));
 
                 break;
             case KeyEvent.VK_UP:

@@ -38,6 +38,14 @@ verifica_sujeito(Sujeito):-
     actor(Sujeito);
     realizador(Sujeito).
 
+% Converter lista em resultados individuais
+
+converte_em_resultados([]).
+
+converte_em_resultados([H|T]):-
+    assert(resultado(H)),
+    converte_em_resultados(T).
+
 % PROGRAMA PRINCIPAL
 
 ln(Frase):-
@@ -54,9 +62,15 @@ verifica_frase -->
 
 verifica_frase_interrogativa -->
     pron_int,
-    sintagma_verbal(_,Sujeito,Accao,Objecto),
+    verbo(N,_,ser),
+    nome(_-N,Accao),
+    sintagma_prep(Objecto),
     {resposta_interrogacao(Accao,Objecto)}.
 
+verifica_frase_interrogativa -->
+    pron_int,
+    sintagma_verbal(_,Sujeito,Accao,Objecto),
+    {resposta_interrogacao(Accao,Objecto)}.
 
 verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
@@ -93,10 +107,9 @@ resposta(Sujeito,Accao,Objecto):-
 
 resposta_interrogacao(Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto,Nome],
-    Facto,
-    write(Nome),assert(resultado(Nome)));
+    findall(Nome,Facto,Resultados),
+    write(Resultados),converte_em_resultados(Resultados));
     write('Sem Resultados'),assert(resultado('Sem Resultados')).
-
 
 % GRAMÁTICA
 
@@ -108,10 +121,11 @@ det(f-p) --> ['As'];[as].
 prep(m-s) --> ['Ao'];[ao].
 prep(f-s) --> ['À'];[à].
 prep(_) --> ['De'];[de].
-
+prep(_) --> ['Para'];[para].
 pron_int --> ['Quem'];['quem'].
 
 verbo(s,Sujeito,ganhar) --> [ganhou],{verifica_sujeito(Sujeito);assert(erro(semantico)),fail}.
+verbo(s,_,ser) --> [foi].
 
 % Filmes
 nome(m-s,thedarkknight) --> ['The','Dark','Knight'].
@@ -139,6 +153,8 @@ nome(f-s,melhormisturasom) --> [melhor,mistura,de,som].
 
 % Vocabulário geral
 nome(m-s,premio) --> [prémio].
+nome(m-p,filme) --> [filmes].
+nome(m-s,nomeado) --> [nomeado].
 
 % BASE DE CONHECIMENTO
 
@@ -161,8 +177,8 @@ ganhar(danieldaylewis,melhorrealizador,'Daniel Day-Lewis').
 ganhar(thedarkknight,melhormisturasom,'The Dark Knight').
 
 % Nomeados
-nomeado(atonement,melhorfilme).
-nomeado(juno,melhorfilme).
-nomeado(michaelclayton,melhorfilme).
-nomeado(therewillbeblood,melhorfilme).
-nomeado(nocountryforoldmen,melhorfilme).
+nomeado(atonement,melhorfilme,'Atonement').
+nomeado(juno,melhorfilme,'Juno').
+nomeado(michaelclayton,melhorfilme,'Michael Clayton').
+nomeado(therewillbeblood,melhorfilme,'There Will Be Blood').
+nomeado(nocountryforoldmen,melhorfilme,'No Country for Old Men').

@@ -28,11 +28,16 @@ public class PLCom {
         simpleQuery("ln('" + question + "')");
 	}
 
-	public String getResult() {
+	public ArrayList getResult() {
 		Variable X = new Variable("X");
+        ArrayList solutions = new ArrayList();
 		Query q = new Query("resultado", new Term[] {X});
-		Hashtable solution = q.oneSolution();
 
-		return solution.get("X").toString();
+        while (q.hasMoreSolutions()) {
+            Hashtable solution = q.nextSolution();
+            solutions.add(solution.get("X").toString());
+        }
+
+		return solutions;
 	}
 }
