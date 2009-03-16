@@ -61,14 +61,14 @@ verifica_frase -->
     verifica_frase_interrogativa.
 
 verifica_frase_interrogativa -->
-    pron_int,
+    sintagma_interrogativo,
     verbo(N,_,ser),
     nome(_-N,Accao),
     sintagma_prep(Objecto),
     {resposta_interrogacao(Accao,Objecto)}.
 
 verifica_frase_interrogativa -->
-    pron_int,
+    sintagma_interrogativo,
     sintagma_verbal(_,Sujeito,Accao,Objecto),
     {resposta_interrogacao(Accao,Objecto)}.
 
@@ -76,6 +76,13 @@ verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
     sintagma_verbal(N,Sujeito,Accao,Objecto),
     {resposta(Sujeito,Accao,Objecto)}.
+
+sintagma_interrogativo -->
+    pron_int,
+    sintagma_nominal(_,_).
+
+sintagma_interrogativo -->
+    pron_int.
 
 sintagma_nominal(G-N,Sujeito) -->
     det(G-N),
@@ -122,10 +129,13 @@ prep(m-s) --> ['Ao'];[ao].
 prep(f-s) --> ['À'];[à].
 prep(_) --> ['De'];[de].
 prep(_) --> ['Para'];[para].
-pron_int --> ['Quem'];['quem'].
+
+pron_int --> ['Quem'];[quem].
+pron_int --> ['Que'];[que].
 
 verbo(s,Sujeito,ganhar) --> [ganhou],{verifica_sujeito(Sujeito);assert(erro(semantico)),fail}.
 verbo(s,_,ser) --> [foi].
+verbo(p,_,ser) --> [foram].
 
 % Filmes
 nome(m-s,'The Dark Knight') --> ['The','Dark','Knight'].
@@ -172,6 +182,7 @@ nome(m-s,'Óscar Honorário') --> [óscar,honorário].
 nome(m-s,premio) --> [prémio].
 nome(m-p,filme) --> [filmes].
 nome(m-s,nomeado) --> [nomeado].
+nome(m-p,nomeado) --> [nomeados].
 
 % BASE DE CONHECIMENTO
 
