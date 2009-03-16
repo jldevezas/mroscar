@@ -1,0 +1,12 @@
+#summary Página inicial do projecto.
+
+= Calendário =
+
+  * 20 Abril - Entrega do Relatório Intercalar
+  * 27 Maio - Entrega do Relatório Final
+  * 27-29 Maio - Demonstração do Trabalho no Lab. de IA
+
+
+= Deliverables =
+
+Brevemente!
