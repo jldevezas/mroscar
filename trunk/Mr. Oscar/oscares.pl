@@ -106,8 +106,8 @@ resposta(Sujeito,Accao,Objecto):-
     write('Não'),assert(resultado('Não')).
 
 resposta_interrogacao(Accao,Objecto):-
-    (Facto=..[Accao,Sujeito,Objecto,Nome],
-    findall(Nome,Facto,Resultados),
+    (Facto=..[Accao,Sujeito,Objecto],
+    findall(Sujeito,Facto,Resultados),
     write(Resultados),converte_em_resultados(Resultados));
     write('Sem Resultados'),assert(resultado('Sem Resultados')).
 
@@ -166,7 +166,7 @@ nome(m-s,'Melhor Documentário') --> [melhor,documentário].
 nome(m-s,'Melhor Documentário em Curta-Metragem') --> [melhor,documentário,em,curta-metragem].
 nome(f-s,'Melhor Curta Metragem') --> [melhor,curta-metragem].
 nome(f-s,'Melhor Curta Metragem de Animação') --> [melhor,curta-metragem,de,animação].
-nome(m-s,'Óscar Honorário) --> [óscar,honorário].
+nome(m-s,'Óscar Honorário') --> [óscar,honorário].
 
 % Vocabulário geral
 nome(m-s,premio) --> [prémio].
@@ -190,17 +190,17 @@ actor('Daniel Day-Lewis').
 realizador('Irmãos Coen').
 
 % Prémios
-ganhar(nocountryforoldmen,'Melhor Filme','No Country for Old Men').
-ganhar(danieldaylewis,'Melhor Realizador','Daniel Day-Lewis').
-ganhar(thedarkknight,'Melhor Mistura de Som','The Dark Knight').
-ganhar(thegoldencompass,'Melhores Efeitos Visuais','The Golden Compass').
+ganhar('No Country for Old Men','Melhor Filme').
+ganhar('Daniel Day-Lewis','Melhor Realizador').
+ganhar('The Dark Knight','Melhor Mistura de Som').
+ganhar('The Golden Compass','Melhores Efeitos Visuais').
 
 % Nomeados
 
-nomeado(atonement,'Melhor Filme','Atonement').
-nomeado(juno,'Melhor Filme','Juno').
-nomeado(michaelclayton,'Melhor Filme','Michael Clayton').
-nomeado(therewillbeblood,'Melhor Filme','There Will Be Blood').
-nomeado(nocountryforoldmen,'Melhor Filme','No Country for Old Men').
+nomeado('Atonement','Melhor Filme').
+nomeado('Juno','Melhor Filme').
+nomeado('Michael Clayton','Melhor Filme').
+nomeado('There Will Be Blood','Melhor Filme').
+nomeado('No Country for Old Men','Melhor Filme').
 
-nomeado(thegoldencompass,'Melhores Efeitos Visuais','The Golden Compass').
+nomeado('The Golden Compass','Melhores Efeitos Visuais').

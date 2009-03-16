@@ -243,7 +243,7 @@ public class MrOscarView extends FrameView {
                 output = pl.getResult();
                 for (int i=0; i < output.size(); i++)
                     jTextAreaReply.append(output.get(i).substring(1,
-                            output.get(i).length()-1) + (i == output.size()-1 ? "\n\n" : ", "));
+                            output.get(i).length()-1) + (i == output.size()-1 ? "\n" : ", "));
 
                 break;
             case KeyEvent.VK_UP:
