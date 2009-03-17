@@ -114,6 +114,7 @@ resposta(Sujeito,Accao,Objecto):-
 
 resposta_interrogacao(Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto],
+    Facto,
     findall(Sujeito,Facto,Resultados),
     write(Resultados),converte_em_resultados(Resultados));
     write('Sem Resultados'),assert(resultado('Sem Resultados')).
@@ -181,6 +182,10 @@ nome(m-s,'Óscar Honorário') --> [óscar,honorário].
 % Vocabulário geral
 nome(m-s,premio) --> [prémio].
 nome(m-p,filme) --> [filmes].
+nome(m-p,actor) --> [actores].
+nome(m-s,actor) --> [actor].
+nome(f-p,actor) --> [actrizes].
+nome(f-s,actor) --> [actriz].
 nome(m-s,nomeado) --> [nomeado].
 nome(m-p,nomeado) --> [nomeados].
 
