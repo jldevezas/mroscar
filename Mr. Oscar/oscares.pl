@@ -50,11 +50,11 @@ converte_em_resultados([H|T]):-
 
 ln(Frase):-
     transf_lista(Frase,LPal),
-	( verifica_frase(LPal,[]);
-		( erro(semantico),write('Erro semântico!'),assert(resultado('Erro semântico'));
-		  (write('Erro sintático!'),assert(resultado('Erro sintático')))
-		)
-	).
+        ( verifica_frase(LPal,[]);
+                ( erro(semantico),write('Erro semântico!'),assert(resultado('Erro semântico'));
+                  (write('Erro sintático!'),assert(resultado('Erro sintático')))
+                )
+        ).
 
 verifica_frase -->
     verifica_frase_afirmativa;
@@ -107,14 +107,14 @@ sintagma_prep(Objecto) -->
 % RESPOSTAS
 
 resposta(Sujeito,Accao,Objecto):-
-    (Facto=..[Accao,Sujeito,Objecto,_],
+    (Facto=..[Accao,Sujeito,Objecto],
     Facto,
     write('Sim'),assert(resultado('Sim')));
     write('Não'),assert(resultado('Não')).
 
 resposta_interrogacao(Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto],
-    Facto,
+    %Facto,
     findall(Sujeito,Facto,Resultados),
     write(Resultados),converte_em_resultados(Resultados));
     write('Sem Resultados'),assert(resultado('Sem Resultados')).
@@ -182,6 +182,7 @@ nome(m-s,'Óscar Honorário') --> [óscar,honorário].
 % Vocabulário geral
 nome(m-s,premio) --> [prémio].
 nome(m-p,filme) --> [filmes].
+nome(m-s,filme) --> [filme].
 nome(m-p,actor) --> [actores].
 nome(m-s,actor) --> [actor].
 nome(f-p,actor) --> [actrizes].
