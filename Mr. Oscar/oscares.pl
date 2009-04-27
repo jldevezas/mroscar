@@ -74,9 +74,16 @@ verifica_frase_interrogativa -->
 
 verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
-    sintagma_verbal(N,Sujeito,Accao,Objecto),
+    verbo(N,_,ser),
+    nome(_-N,Accao),
+    sintagma_prep(Ojecto),
     {resposta(Sujeito,Accao,Objecto)}.
 
+verifica_frase_afirmativa -->
+    sintagma_nominal(_-N,Sujeito),
+    sintagma_verbal(N,Sujeito,Accao,Objecto),
+    {resposta(Sujeito,Accao,Objecto)}.
+    
 sintagma_interrogativo -->
     pron_int,
     sintagma_nominal(_,_).
@@ -117,7 +124,7 @@ resposta_interrogacao(Accao,Objecto):-
     %Facto,
     findall(Sujeito,Facto,Resultados),
     write(Resultados),converte_em_resultados(Resultados));
-    write('Sem Resultados'),assert(resultado('Sem Resultados')).
+    (write('Sem Resultados'),assert(resultado('Sem Resultados'))).
 
 % GRAMÁTICA
 
@@ -139,7 +146,6 @@ verbo(s,_,ser) --> [foi].
 verbo(p,_,ser) --> [foram].
 
 % Filmes
-nome(m-s,'The Dark Knight') --> ['The','Dark','Knight'].
 nome(m-s,'No Country for Old Men') --> ['No','Country',for,'Old','Men'].
 nome(f-s,'The Golden Compass') --> ['The','Gold','Compass'].
 nome(m-s,'There Will Be Blood') --> ['There','Will','Be','Blood'].
@@ -150,7 +156,10 @@ nome(m-s,'Juno') --> ['Juno'].
 nome(m-s, 'Daniel Day-Lewis') --> ['Daniel', 'Day-Lewis'].
 
 % Realizadores
-nome(p-s, 'Irmãos Coen') --> [irmãos, 'Coen'];['Irmãos', 'Coen'].
+nome(m-s,'Julian Schnabel') --> ['Julian','Schnabel'].
+nome(m-s,'Tony Gilroy') --> ['Tony','Gilroy'].
+nome(m-p,'Irmãos Coen') --> [irmãos, 'Coen'];['Irmãos', 'Coen'].
+nome(m-s,'Paul Thomas Anderson') --> ['Paul','Thomas','Anderson'].
 
 % Prémios
 nome(m-s,'Melhor Filme') --> [melhor,filme].
@@ -193,7 +202,6 @@ nome(m-p,nomeado) --> [nomeados].
 % BASE DE CONHECIMENTO
 
 % Filmes
-filme('The Dark Knight').
 filme('Juno').
 filme('Michael Clayton').
 filme('There Will Be Blood').
@@ -204,12 +212,16 @@ filme('The Golden Compass').
 actor('Daniel Day-Lewis').
 
 % Realizadores
+realizador('Julian Schnabel').
+realizador('Jason Reitman').
+realizador('Tony Gilroy').
 realizador('Irmãos Coen').
+realizador('Paul Thomas Anderson').
 
 % Prémios
+
 ganhar('No Country for Old Men','Melhor Filme').
 ganhar('Daniel Day-Lewis','Melhor Realizador').
-ganhar('The Dark Knight','Melhor Mistura de Som').
 ganhar('The Golden Compass','Melhores Efeitos Visuais').
 
 % Nomeados
@@ -219,5 +231,11 @@ nomeado('Juno','Melhor Filme').
 nomeado('Michael Clayton','Melhor Filme').
 nomeado('There Will Be Blood','Melhor Filme').
 nomeado('No Country for Old Men','Melhor Filme').
+
+nomeado('Julian Schnabel','Melhor Realizador').
+nomeado('Jason Reitman','Melhor Realizador').
+nomeado('Tony Gilroy','Melhor Realizador').
+nomeado('Irmãos Coen','Melhor Realizador').
+nomeado('Paul Thomas Anderson','Melhor Realizador').
 
 nomeado('The Golden Compass','Melhores Efeitos Visuais').
