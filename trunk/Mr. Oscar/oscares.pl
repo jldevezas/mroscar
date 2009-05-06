@@ -19,7 +19,7 @@
 
 transf_lista(Frase,LPal):-
     string_to_list(Frase,LChar),
-    faz_palavras(LChar,[],LPal),!.
+    faz_palavras(LChar,[],LPal).
 
 faz_palavras([],LChar,[Pal]):-atom_chars(Pal,LChar).
 
@@ -33,7 +33,11 @@ faz_palavras([H|T],LChar,LPal):-
 
 % Validações
 
-verifica_sujeito(Sujeito):-
+pessoa(Sujeito):-
+    actor(Sujeito);
+    realizador(Sujeito).
+
+valida_sujeito(Sujeito):-
     filme(Sujeito);
     actor(Sujeito);
     realizador(Sujeito).
@@ -51,7 +55,7 @@ converte_em_resultados([H|T]):-
 ln(Frase):-
     transf_lista(Frase,LPal),
         ( verifica_frase(LPal,[]);
-                ( erro(semantico),write('Erro semântico!'),assert(resultado('Erro semântico'));
+                ( (erro(semantico),write('Erro semântico!'),assert(resultado('Erro semântico')));
                   (write('Erro sintático!'),assert(resultado('Erro sintático')))
                 )
         ).
@@ -60,24 +64,24 @@ verifica_frase -->
     verifica_frase_afirmativa;
     verifica_frase_interrogativa.
 
-verifica_frase_interrogativa -->
-    sintagma_interrogativo,
-    verbo(N,_,ser),
-    nome(_-N,Accao),
-    sintagma_prep(Objecto),
-    {resposta_interrogacao(Accao,Objecto)}.
+%verifica_frase_interrogativa -->
+%    sintagma_interrogativo,
+%    verbo(N,_,ser),
+%    nome(_-N,Accao),
+%    sintagma_prep(Objecto),
+%    {resposta_interrogacao(Accao,Objecto)}.
 
 verifica_frase_interrogativa -->
     sintagma_interrogativo,
     sintagma_verbal(_,Sujeito,Accao,Objecto),
     {resposta_interrogacao(Accao,Objecto)}.
 
-verifica_frase_afirmativa -->
-    sintagma_nominal(_-N,Sujeito),
-    verbo(N,_,ser),
-    nome(_-N,Accao),
-    sintagma_prep(Ojecto),
-    {resposta(Sujeito,Accao,Objecto)}.
+%verifica_frase_afirmativa -->
+%    sintagma_nominal(_-N,Sujeito),
+%    verbo(N,_,ser),
+%    nome(_-N,Accao),
+%    sintagma_prep(Ojecto),
+%    {resposta(Sujeito,Accao,Objecto)}.
 
 verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
@@ -99,13 +103,14 @@ sintagma_nominal(G-N,Sujeito) -->
     nome(G-N,Sujeito).
 
 sintagma_verbal(N,Sujeito,Accao,Objecto) -->
-    verbo(N,Sujeito,Accao),
-    sintagma_nominal(_,_),
+    verbo(N,_,ser),
+    nome(_-N,Accao),
     sintagma_prep(Objecto).
 
 sintagma_verbal(N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
-    sintagma_nominal(_,Objecto).
+    sintagma_nominal(_,_),
+    sintagma_prep(Objecto).
 
 sintagma_prep(Objecto) -->
     prep(G-N),
@@ -141,7 +146,7 @@ prep(_) --> ['Para'];[para].
 pron_int --> ['Quem'];[quem].
 pron_int --> ['Que'];[que].
 
-verbo(s,Sujeito,ganhar) --> [ganhou],{verifica_sujeito(Sujeito);assert(erro(semantico)),fail}.
+verbo(s,Sujeito,ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,_,ser) --> [foi].
 verbo(p,_,ser) --> [foram].
 
@@ -151,6 +156,10 @@ nome(f-s,'The Golden Compass') --> ['The','Gold','Compass'].
 nome(m-s,'There Will Be Blood') --> ['There','Will','Be','Blood'].
 nome(m-s,'Michael Clayton') --> ['Michael','Clayton'].
 nome(m-s,'Juno') --> ['Juno'].
+nome(m-s,'The Diving Bell and the Butterfly') -->
+    ['The','Divinity','Bell',and,the,'Butterfly'];
+    ['The','Divinity','Bell','And','The','Butterfly'].
+nome(m-s,'Michael Clayton') --> ['Michael','Clayton'].
 
 % Actores
 nome(m-s, 'Daniel Day-Lewis') --> ['Daniel', 'Day-Lewis'].
@@ -207,6 +216,8 @@ filme('Michael Clayton').
 filme('There Will Be Blood').
 filme('No Country for Old Men').
 filme('The Golden Compass').
+filme('The Diving Bell and the Butterfly').
+filme('Michael Clayton').
 
 % Actores
 actor('Daniel Day-Lewis').
@@ -221,7 +232,8 @@ realizador('Paul Thomas Anderson').
 % Prémios
 
 ganhar('No Country for Old Men','Melhor Filme').
-ganhar('Daniel Day-Lewis','Melhor Realizador').
+ganhar('Daniel Day-Lewis','Melhor Actor').
+ganhar('Irmãos Coen','Melhor Realizador').
 ganhar('The Golden Compass','Melhores Efeitos Visuais').
 
 % Nomeados
@@ -232,10 +244,30 @@ nomeado('Michael Clayton','Melhor Filme').
 nomeado('There Will Be Blood','Melhor Filme').
 nomeado('No Country for Old Men','Melhor Filme').
 
+% Realizadores
 nomeado('Julian Schnabel','Melhor Realizador').
 nomeado('Jason Reitman','Melhor Realizador').
 nomeado('Tony Gilroy','Melhor Realizador').
 nomeado('Irmãos Coen','Melhor Realizador').
 nomeado('Paul Thomas Anderson','Melhor Realizador').
+% Filmes
+nomeado('The Diving Bell and the Butterfly','Melhor Realizador').
+nomeado('Juno','Melhor Realizador').
+nomeado('Michael Clayton','Melhor Realizador').
+nomeado('No Country for Old Men','Melhor Realizador').
+nomeado('There Will Be Blood','Melhor Realizador').
+
+% Actores
+nomeado('George Clooney','Melhor Actor').
+nomeado('Daniel Day-Lewis','Melhor Actor').
+nomeado('Johnny Depp','Melhor Actor').
+nomeado('Tommy Lee Jones','Melhor Actor').
+nomeado('Viggo Mortensen','Melhor Actor').
+% Filmes
+nomeado('Michael Clayton','Melhor Actor').
+nomeado('There Will Be Blood','Melhor Actor').
+nomeado('Sweeney Todd: The Demon Barber of Fleet Street','Melhor Actor').
+nomeado('In the Valley of Elah','Melhor Actor').
+nomeado('Eastern Promises','Melhor Actor').
 
 nomeado('The Golden Compass','Melhores Efeitos Visuais').
