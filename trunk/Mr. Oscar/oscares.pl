@@ -33,10 +33,6 @@ faz_palavras([H|T],LChar,LPal):-
 
 % Validações
 
-pessoa(Sujeito):-
-    actor(Sujeito);
-    realizador(Sujeito).
-
 valida_sujeito(Sujeito):-
     filme(Sujeito);
     actor(Sujeito);
@@ -64,24 +60,10 @@ verifica_frase -->
     verifica_frase_afirmativa;
     verifica_frase_interrogativa.
 
-%verifica_frase_interrogativa -->
-%    sintagma_interrogativo,
-%    verbo(N,_,ser),
-%    nome(_-N,Accao),
-%    sintagma_prep(Objecto),
-%    {resposta_interrogacao(Accao,Objecto)}.
-
 verifica_frase_interrogativa -->
     sintagma_interrogativo,
     sintagma_verbal(_,Sujeito,Accao,Objecto),
     {resposta_interrogacao(Accao,Objecto)}.
-
-%verifica_frase_afirmativa -->
-%    sintagma_nominal(_-N,Sujeito),
-%    verbo(N,_,ser),
-%    nome(_-N,Accao),
-%    sintagma_prep(Ojecto),
-%    {resposta(Sujeito,Accao,Objecto)}.
 
 verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
@@ -112,6 +94,14 @@ sintagma_verbal(N,Sujeito,Accao,Objecto) -->
     sintagma_nominal(_,_),
     sintagma_prep(Objecto).
 
+sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+    verbo(N,Sujeito,Accao),
+    sintagma_nominal(_,Objecto).
+
+sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+    verbo(N,Sujeito,Accao),
+    sintagma_prep(Objecto).
+
 sintagma_prep(Objecto) -->
     prep(G-N),
     sintagma_nominal(G-N,Objecto).
@@ -126,7 +116,6 @@ resposta(Sujeito,Accao,Objecto):-
 
 resposta_interrogacao(Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto],
-    %Facto,
     findall(Sujeito,Facto,Resultados),
     write(Resultados),converte_em_resultados(Resultados));
     (write('Sem Resultados'),assert(resultado('Sem Resultados'))).
@@ -142,11 +131,18 @@ prep(m-s) --> ['Ao'];[ao].
 prep(f-s) --> ['À'];[à].
 prep(_) --> ['De'];[de].
 prep(_) --> ['Para'];[para].
+prep(_) --> ['Em'];[em].
+prep(m-s) --> ['No'];[no].
+prep(m-p) --> ['Nos'];[nos].
+prep(f-s) --> ['Na'];[na].
+prep(f-p) --> ['Nas'];[nas].
 
 pron_int --> ['Quem'];[quem].
 pron_int --> ['Que'];[que].
 
 verbo(s,Sujeito,ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,Sujeito,realizar) --> [realizou],{realizador(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,Sujeito,entrar) --> [entrou],{actor(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,_,ser) --> [foi].
 verbo(p,_,ser) --> [foram].
 
@@ -160,12 +156,22 @@ nome(m-s,'The Diving Bell and the Butterfly') -->
     ['The','Divinity','Bell',and,the,'Butterfly'];
     ['The','Divinity','Bell','And','The','Butterfly'].
 nome(m-s,'Michael Clayton') --> ['Michael','Clayton'].
+nome(m-_,'Pirates of the Caribbean') --> ['Pirates',of,the,'Caribbean'];['Pirates','Of','The','Caribbean'].
+nome(m-_,'Transformers') --> ['Transformers'].
+nome(m-s,'Sweeney Todd') --> ['Sweeney','Todd'].
+nome(m-s,'In the Valley of Elah') --> ['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
+nome(m-s,'Eastern Promises') --> ['Eastern','Promises'].
 
 % Actores
-nome(m-s, 'Daniel Day-Lewis') --> ['Daniel', 'Day-Lewis'].
+nome(m-s,'Daniel Day-Lewis') --> ['Daniel', 'Day-Lewis'].
+nome(m-s,'George Clooney') --> ['George','Clooney'].
+nome(m-s,'Johnny Depp') --> ['Johnny','Depp'].
+nome(m-s,'Tommy Lee Jones') --> ['Tommy','Lee','Jones'].
+nome(m-s,'Viggo Mortensen') --> ['Viggo','Mortensen'].
 
 % Realizadores
 nome(m-s,'Julian Schnabel') --> ['Julian','Schnabel'].
+nome(m-s,'Jason Reitman') --> ['Jason','Reitman'].
 nome(m-s,'Tony Gilroy') --> ['Tony','Gilroy'].
 nome(m-p,'Irmãos Coen') --> [irmãos, 'Coen'];['Irmãos', 'Coen'].
 nome(m-s,'Paul Thomas Anderson') --> ['Paul','Thomas','Anderson'].
@@ -217,10 +223,16 @@ filme('There Will Be Blood').
 filme('No Country for Old Men').
 filme('The Golden Compass').
 filme('The Diving Bell and the Butterfly').
-filme('Michael Clayton').
+filme('Sweeney Todd').
+filme('In the Valley of Elah').
+filme('Eastern Promises').
 
 % Actores
+actor('George Clooney').
 actor('Daniel Day-Lewis').
+actor('Johnny Depp').
+actor('Tommy Lee Jones').
+actor('Viggo Mortensen').
 
 % Realizadores
 realizador('Julian Schnabel').
@@ -228,6 +240,8 @@ realizador('Jason Reitman').
 realizador('Tony Gilroy').
 realizador('Irmãos Coen').
 realizador('Paul Thomas Anderson').
+
+% ACÇÕES
 
 % Prémios
 
@@ -244,30 +258,32 @@ nomeado('Michael Clayton','Melhor Filme').
 nomeado('There Will Be Blood','Melhor Filme').
 nomeado('No Country for Old Men','Melhor Filme').
 
-% Realizadores
 nomeado('Julian Schnabel','Melhor Realizador').
 nomeado('Jason Reitman','Melhor Realizador').
 nomeado('Tony Gilroy','Melhor Realizador').
 nomeado('Irmãos Coen','Melhor Realizador').
 nomeado('Paul Thomas Anderson','Melhor Realizador').
-% Filmes
-nomeado('The Diving Bell and the Butterfly','Melhor Realizador').
-nomeado('Juno','Melhor Realizador').
-nomeado('Michael Clayton','Melhor Realizador').
-nomeado('No Country for Old Men','Melhor Realizador').
-nomeado('There Will Be Blood','Melhor Realizador').
 
-% Actores
 nomeado('George Clooney','Melhor Actor').
 nomeado('Daniel Day-Lewis','Melhor Actor').
 nomeado('Johnny Depp','Melhor Actor').
 nomeado('Tommy Lee Jones','Melhor Actor').
 nomeado('Viggo Mortensen','Melhor Actor').
-% Filmes
-nomeado('Michael Clayton','Melhor Actor').
-nomeado('There Will Be Blood','Melhor Actor').
-nomeado('Sweeney Todd: The Demon Barber of Fleet Street','Melhor Actor').
-nomeado('In the Valley of Elah','Melhor Actor').
-nomeado('Eastern Promises','Melhor Actor').
 
 nomeado('The Golden Compass','Melhores Efeitos Visuais').
+nomeado('Pirates of the Caribbean','Melhores Efeitos Visuais').
+nomeado('Transformers','Melhores Efeitos Visuais').
+
+% Quem fez o quê
+
+realizar('Julian Schnabel','The Diving Bell and the Butterfly').
+realizar('Jason Reitman','Juno').
+realizar('Tony Gilroy','Michael Clayton').
+realizar('Irmãos Coen','No Country for Old Men').
+realizar('Paul Thomas Anderson','There Will Be Blood').
+
+entrar('George Clooney','Michael Clayton').
+entrar('Daniel Day-Lewis','There Will Be Blood').
+entrar('Johnny Depp','Sweeney Todd').
+entrar('Tommy Lee Jones','In the Valley of Elah').
+entrar('Viggo Mortensen','Eastern Promises').
