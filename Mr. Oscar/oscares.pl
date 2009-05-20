@@ -37,7 +37,7 @@ valida_sujeito(Sujeito):-
     filme(Sujeito);
     actor(Sujeito);
     realizador(Sujeito).
-
+    
 % Converter lista em resultados individuais
 
 converte_em_resultados([]).
@@ -61,21 +61,23 @@ verifica_frase -->
     verifica_frase_interrogativa.
 
 verifica_frase_interrogativa -->
-    sintagma_interrogativo,
-    sintagma_verbal(_,Sujeito,Accao,Objecto),
-    {resposta_interrogacao(Accao,Objecto)}.
+    sintagma_interrogativo(Pron,TipoSuj),
+    {Pron==quem,N=s},
+    sintagma_verbal(N,_,Accao,Objecto),
+    {resposta_interrogacao(TipoSuj,Accao,Objecto)}.
 
 verifica_frase_afirmativa -->
     sintagma_nominal(_-N,Sujeito),
     sintagma_verbal(N,Sujeito,Accao,Objecto),
     {resposta(Sujeito,Accao,Objecto)}.
     
-sintagma_interrogativo -->
-    pron_int,
-    sintagma_nominal(_,_).
+sintagma_interrogativo(Pron,TipoSuj) -->
+    pron_int(Pron),{Pron=que},
+    sintagma_nominal(_,TipoSuj).
 
-sintagma_interrogativo -->
-    pron_int.
+sintagma_interrogativo(Pron,TipoSuj) -->
+    pron_int(Pron),
+    {Pron=quem,TipoSuj=pessoa}.
 
 sintagma_nominal(G-N,Sujeito) -->
     det(G-N),
@@ -84,7 +86,7 @@ sintagma_nominal(G-N,Sujeito) -->
 sintagma_nominal(G-N,Sujeito) -->
     nome(G-N,Sujeito).
 
-sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+sintagma_verbal(N,_,Accao,Objecto) -->
     verbo(N,_,ser),
     nome(_-N,Accao),
     sintagma_prep(Objecto).
@@ -114,9 +116,10 @@ resposta(Sujeito,Accao,Objecto):-
     write('Sim'),assert(resultado('Sim')));
     write('Não'),assert(resultado('Não')).
 
-resposta_interrogacao(Accao,Objecto):-
+resposta_interrogacao(TipoSuj,Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto],
-    findall(Sujeito,Facto,Resultados),
+    Validacao=..[TipoSuj,Sujeito],
+    findall(Sujeito,(Facto,Validacao),Resultados),
     write(Resultados),converte_em_resultados(Resultados));
     (write('Sem Resultados'),assert(resultado('Sem Resultados'))).
 
@@ -137,10 +140,11 @@ prep(m-p) --> ['Nos'];[nos].
 prep(f-s) --> ['Na'];[na].
 prep(f-p) --> ['Nas'];[nas].
 
-pron_int --> ['Quem'];[quem].
-pron_int --> ['Que'];[que].
+pron_int(quem) --> ['Quem'];[quem].
+pron_int(que) --> ['Que'];[que].
 
 verbo(s,Sujeito,ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(p,Sujeito,ganhar) --> [ganharam],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,Sujeito,realizar) --> [realizou],{realizador(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,Sujeito,entrar) --> [entrou],{actor(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,_,ser) --> [foi].
@@ -176,6 +180,12 @@ nome(m-s,'Tony Gilroy') --> ['Tony','Gilroy'].
 nome(m-p,'Irmãos Coen') --> [irmãos, 'Coen'];['Irmãos', 'Coen'].
 nome(m-s,'Paul Thomas Anderson') --> ['Paul','Thomas','Anderson'].
 
+% Pessoas
+nome(m-s,'Michael Fink') --> ['Michael','Fink'].
+nome(m-s,'Bill Westenhofer') --> ['Bill','Westenhofer'].
+nome(m-s,'Ben Morris') --> ['Ben','Morris'].
+nome(m-s,'Trevor Wood') --> ['Trevor','Wood'].
+
 % Prémios
 nome(m-s,'Melhor Filme') --> [melhor,filme].
 nome(m-s,'Melhor Realizador') --> [melhor,realizador].
@@ -205,12 +215,17 @@ nome(m-s,'Óscar Honorário') --> [óscar,honorário].
 
 % Vocabulário geral
 nome(m-s,premio) --> [prémio].
+nome(m-s,oscar) --> [óscar].
 nome(m-p,filme) --> [filmes].
 nome(m-s,filme) --> [filme].
 nome(m-p,actor) --> [actores].
 nome(m-s,actor) --> [actor].
 nome(f-p,actor) --> [actrizes].
 nome(f-s,actor) --> [actriz].
+nome(f-s,pessoa) --> [pessoa].
+nome(f-p,pessoa) --> [pessoas].
+nome(m-s,realizador) --> [realizador].
+nome(m-p,realizador) --> [realizadores].
 nome(m-s,nomeado) --> [nomeado].
 nome(m-p,nomeado) --> [nomeados].
 
@@ -241,14 +256,40 @@ realizador('Tony Gilroy').
 realizador('Irmãos Coen').
 realizador('Paul Thomas Anderson').
 
+% Pessoas envolvidas nos filmes em geral
+pessoa('Michael Fink').
+pessoa('Bill Westenhofer').
+pessoa('Ben Morris').
+pessoa('Trevor Wood').
+pessoa('John Knoll').
+pessoa('Hal Hickel').
+pessoa('Charles Gibson').
+pessoa('John Frazier').
+pessoa('Scott Farrar').
+pessoa('Scott Benza').
+pessoa('Russell Earl').
+
+pessoa(Sujeito):-
+    actor(Sujeito);
+    realizador(Sujeito).
+
 % ACÇÕES
 
 % Prémios
 
 ganhar('No Country for Old Men','Melhor Filme').
+
 ganhar('Daniel Day-Lewis','Melhor Actor').
+ ganhar('There Will Be Blood','Melhor Actor').
+
 ganhar('Irmãos Coen','Melhor Realizador').
+ ganhar('No Country for Old Men','Melhor Realizador').
+
 ganhar('The Golden Compass','Melhores Efeitos Visuais').
+ ganhar('Michael Fink','Melhores Efeitos Visuais').
+ ganhar('Bill Westenhofer','Melhores Efeitos Visuais').
+ ganhar('Ben Morris','Melhores Efeitos Visuais').
+ ganhar('Trevor Wood','Melhores Efeitos Visuais').
 
 % Nomeados
 
@@ -259,20 +300,42 @@ nomeado('There Will Be Blood','Melhor Filme').
 nomeado('No Country for Old Men','Melhor Filme').
 
 nomeado('Julian Schnabel','Melhor Realizador').
+ nomeado('The Diving Bell and the Butterfly','Melhor Realizador').
 nomeado('Jason Reitman','Melhor Realizador').
+ nomeado('Juno','Melhor Realizador').
 nomeado('Tony Gilroy','Melhor Realizador').
+ nomeado('Michael Clayton','Melhor Realizador').
 nomeado('Irmãos Coen','Melhor Realizador').
+ nomeado('No Country for Old Men','Melhor Realizador').
 nomeado('Paul Thomas Anderson','Melhor Realizador').
+ nomeado('There Will Be Blood','Melhor Realizador').
 
 nomeado('George Clooney','Melhor Actor').
+ nomeado('Michael Clayton','Melhor Actor').
 nomeado('Daniel Day-Lewis','Melhor Actor').
+ nomeado('There Will Be Blood','Melhor Actor').
 nomeado('Johnny Depp','Melhor Actor').
+ nomeado(' Sweeney Todd','Melhor Actor').
 nomeado('Tommy Lee Jones','Melhor Actor').
+ nomeado('In the Valley of Elah','Melhor Actor').
 nomeado('Viggo Mortensen','Melhor Actor').
+ nomeado('Eastern Promises','Melhor Actor').
 
 nomeado('The Golden Compass','Melhores Efeitos Visuais').
+ nomeado('Michael Fink','Melhores Efeitos Visuais').
+ nomeado('Bill Westenhofer','Melhores Efeitos Visuais').
+ nomeado('Ben Morris','Melhores Efeitos Visuais').
+ nomeado('Trevor Wood','Melhores Efeitos Visuais').
 nomeado('Pirates of the Caribbean','Melhores Efeitos Visuais').
+ nomeado('John Knoll','Melhores Efeitos Visuais').
+ nomeado('Hal Hickel','Melhores Efeitos Visuais').
+ nomeado('Charles Gibson','Melhores Efeitos Visuais').
+ nomeado('John Frazier','Melhores Efeitos Visuais').
 nomeado('Transformers','Melhores Efeitos Visuais').
+ nomeado('Scott Farrar','Melhores Efeitos Visuais').
+ nomeado('Scott Benza','Melhores Efeitos Visuais').
+ nomeado('Russell Earl','Melhores Efeitos Visuais').
+ nomeado('John Frazier','Melhores Efeitos Visuais').
 
 % Quem fez o quê
 
