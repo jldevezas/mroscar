@@ -62,7 +62,7 @@ verifica_frase -->
 
 verifica_frase_interrogativa -->
     sintagma_interrogativo(Pron,TipoSuj),
-    {Pron==quem,N=s},
+    {Pron==quem,N=s;N=_},
     sintagma_verbal(N,_,Accao,Objecto),
     {resposta_interrogacao(TipoSuj,Accao,Objecto)}.
 
