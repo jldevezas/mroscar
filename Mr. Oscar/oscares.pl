@@ -158,10 +158,10 @@ prep(f-p) --> ['Nas'];[nas].
 pron_int(quem) --> ['Quem'];[quem].
 pron_int(que) --> ['Que'];[que].
 
-verbo(s,Sujeito,ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(p,Sujeito,ganhar) --> [ganharam],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,Sujeito,realizar) --> [realizou],{realizador(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,Sujeito,entrar) --> [entrou],{actor(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,[Sujeito],ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(p,[Sujeito],ganhar) --> [ganharam],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,[Sujeito],realizar) --> [realizou],{realizador(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,[Sujeito],entrar) --> [entrou],{actor(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,_,ser) --> [foi].
 verbo(p,_,ser) --> [foram].
 
