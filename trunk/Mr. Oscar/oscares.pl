@@ -73,17 +73,24 @@ verifica_frase_afirmativa -->
     
 sintagma_interrogativo(Pron,TipoSuj) -->
     pron_int(Pron),{Pron=que},
-    sintagma_nominal(_,TipoSuj).
+    sintagma_nominal(_,[TipoSuj]).
 
 sintagma_interrogativo(Pron,TipoSuj) -->
     pron_int(Pron),
     {Pron=quem,TipoSuj=pessoa}.
 
-sintagma_nominal(G-N,Sujeito) -->
+sintagma_nominal(_-p,[Sujeito|R]) -->
+     sintagma_nominal1(_,Sujeito),[e],
+     sintagma_nominal(_,R).
+
+sintagma_nominal(G-N,[Sujeito]) -->
+     sintagma_nominal1(G-N,Sujeito).
+
+sintagma_nominal1(G-N,Sujeito) -->
     det(G-N),
     nome(G-N,Sujeito).
 
-sintagma_nominal(G-N,Sujeito) -->
+sintagma_nominal1(G-N,Sujeito) -->
     nome(G-N,Sujeito).
 
 sintagma_verbal(N,_,Accao,Objecto) -->
@@ -98,7 +105,7 @@ sintagma_verbal(N,Sujeito,Accao,Objecto) -->
 
 sintagma_verbal(N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
-    sintagma_nominal(_,Objecto).
+    sintagma_nominal(_,[Objecto]).
 
 sintagma_verbal(N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
@@ -106,7 +113,7 @@ sintagma_verbal(N,Sujeito,Accao,Objecto) -->
 
 sintagma_prep(Objecto) -->
     prep(G-N),
-    sintagma_nominal(G-N,Objecto).
+    sintagma_nominal(G-N,[Objecto]).
 
 % RESPOSTAS
 
@@ -115,6 +122,12 @@ resposta(Sujeito,Accao,Objecto):-
     Facto,
     write('Sim'),assert(resultado('Sim')));
     write('Não'),assert(resultado('Não')).
+
+valida_factos([Sujeito|R],Accao,Objecto):-
+    (Facto=..[
+valida_factos([Sujeito],Accao,Objecto):-
+    (Facto=..[Accao,Sujeito,Objecto],
+    Facto.
 
 resposta_interrogacao(TipoSuj,Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto],
@@ -165,6 +178,7 @@ nome(m-_,'Transformers') --> ['Transformers'].
 nome(m-s,'Sweeney Todd') --> ['Sweeney','Todd'].
 nome(m-s,'In the Valley of Elah') --> ['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
 nome(m-s,'Eastern Promises') --> ['Eastern','Promises'].
+nome(m-s,'Atonement') --> ['Atonement'].
 
 % Actores
 nome(m-s,'Daniel Day-Lewis') --> ['Daniel', 'Day-Lewis'].
