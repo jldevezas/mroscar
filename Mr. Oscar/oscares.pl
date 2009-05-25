@@ -87,7 +87,7 @@ sintagma_nominal(G-N,Sujeito) -->
     nome(G-N,Sujeito).
 
 sintagma_verbal(N,_,Accao,Objecto) -->
-    verbo(N,_,ser),
+    verbo(N,_,ser),!,
     nome(_-N,Accao),
     sintagma_prep(Objecto).
 
@@ -315,7 +315,7 @@ nomeado('George Clooney','Melhor Actor').
 nomeado('Daniel Day-Lewis','Melhor Actor').
  nomeado('There Will Be Blood','Melhor Actor').
 nomeado('Johnny Depp','Melhor Actor').
- nomeado(' Sweeney Todd','Melhor Actor').
+ nomeado('Sweeney Todd','Melhor Actor').
 nomeado('Tommy Lee Jones','Melhor Actor').
  nomeado('In the Valley of Elah','Melhor Actor').
 nomeado('Viggo Mortensen','Melhor Actor').
