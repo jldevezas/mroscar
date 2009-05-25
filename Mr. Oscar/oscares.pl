@@ -117,17 +117,19 @@ sintagma_prep(Objecto) -->
 
 % RESPOSTAS
 
-resposta(Sujeito,Accao,Objecto):-
-    (Facto=..[Accao,Sujeito,Objecto],
+valida_factos([Sujeito|R],Accao,Objecto):-
+    Facto=..[Accao,Sujeito,Objecto],
     Facto,
+    valida_factos(R,Accao,Objecto).
+
+valida_factos([Sujeito],Accao,Objecto):-
+    Facto=..[Accao,Sujeito,Objecto],
+    Facto.
+
+resposta(Sujeito,Accao,Objecto):-
+    (valida_factos(Sujeito,Accao,Objecto),
     write('Sim'),assert(resultado('Sim')));
     write('Não'),assert(resultado('Não')).
-
-valida_factos([Sujeito|R],Accao,Objecto):-
-    (Facto=..[
-valida_factos([Sujeito],Accao,Objecto):-
-    (Facto=..[Accao,Sujeito,Objecto],
-    Facto.
 
 resposta_interrogacao(TipoSuj,Accao,Objecto):-
     (Facto=..[Accao,Sujeito,Objecto],
@@ -165,7 +167,7 @@ verbo(p,_,ser) --> [foram].
 
 % Filmes
 nome(m-s,'No Country for Old Men') --> ['No','Country',for,'Old','Men'].
-nome(f-s,'The Golden Compass') --> ['The','Gold','Compass'].
+nome(m-s,'The Golden Compass') --> ['The','Golden','Compass'].
 nome(m-s,'There Will Be Blood') --> ['There','Will','Be','Blood'].
 nome(m-s,'Michael Clayton') --> ['Michael','Clayton'].
 nome(m-s,'Juno') --> ['Juno'].
@@ -349,7 +351,7 @@ nomeado('Transformers','Melhores Efeitos Visuais').
  nomeado('Scott Farrar','Melhores Efeitos Visuais').
  nomeado('Scott Benza','Melhores Efeitos Visuais').
  nomeado('Russell Earl','Melhores Efeitos Visuais').
- nomeado('John Frazier','Melhores Efeitos Visuais').
+ %nomeado('John Frazier','Melhores Efeitos Visuais').
 
 % Quem fez o quê
 
