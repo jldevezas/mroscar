@@ -61,21 +61,21 @@ verifica_frase -->
     verifica_frase_interrogativa.
 
 verifica_frase_interrogativa -->
-    sintagma_interrogativo(Pron,TipoSuj),
+    sintagma_interrogativo(G-N,Pron,TipoSuj),
     {Pron==quem,N=s;N=_},
-    sintagma_verbal(N,_,Accao,Objecto),
+    sintagma_verbal(G-N,_,Accao,Objecto),
     {resposta_interrogacao(TipoSuj,Accao,Objecto)}.
 
 verifica_frase_afirmativa -->
-    sintagma_nominal(_-N,Sujeito),
-    sintagma_verbal(N,Sujeito,Accao,Objecto),
+    sintagma_nominal(G-N,Sujeito),
+    sintagma_verbal(G-N,Sujeito,Accao,Objecto),
     {resposta(Sujeito,Accao,Objecto)}.
     
-sintagma_interrogativo(Pron,TipoSuj) -->
+sintagma_interrogativo(G-N,Pron,TipoSuj) -->
     pron_int(Pron),{Pron=que},
-    sintagma_nominal(_,[TipoSuj]).
+    sintagma_nominal(G-N,[TipoSuj]).
 
-sintagma_interrogativo(Pron,TipoSuj) -->
+sintagma_interrogativo(_,Pron,TipoSuj) -->
     pron_int(Pron),
     {Pron=quem,TipoSuj=pessoa}.
 
@@ -93,21 +93,21 @@ sintagma_nominal1(G-N,Sujeito) -->
 sintagma_nominal1(G-N,Sujeito) -->
     nome(G-N,Sujeito).
 
-sintagma_verbal(N,_,Accao,Objecto) -->
+sintagma_verbal(G-N,_,Accao,Objecto) -->
     verbo(N,_,ser),!,
-    nome(_-N,Accao),
+    nome(G-N,Accao),
     sintagma_prep(Objecto).
 
-sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+sintagma_verbal(_-N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
     sintagma_nominal(_,_),
     sintagma_prep(Objecto).
 
-sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+sintagma_verbal(_-N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
     sintagma_nominal(_,[Objecto]).
 
-sintagma_verbal(N,Sujeito,Accao,Objecto) -->
+sintagma_verbal(_-N,Sujeito,Accao,Objecto) -->
     verbo(N,Sujeito,Accao),
     sintagma_prep(Objecto).
 
@@ -181,6 +181,10 @@ nome(m-s,'Sweeney Todd') --> ['Sweeney','Todd'].
 nome(m-s,'In the Valley of Elah') --> ['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
 nome(m-s,'Eastern Promises') --> ['Eastern','Promises'].
 nome(m-s,'Atonement') --> ['Atonement'].
+nome(m-s,'Elizabeth: The Golden Age') --> ['Elizabeth:','The','Golden','Age'].
+nome(m-s,'Away from Her') --> ['Away',from,'Her'].
+nome(m-s,'La môme') --> ['La',môme];['La','Môme'].
+nome(m-s,'The Savages') --> ['The','Savages'].
 
 % Actores
 nome(m-s,'Daniel Day-Lewis') --> ['Daniel', 'Day-Lewis'].
@@ -188,6 +192,11 @@ nome(m-s,'George Clooney') --> ['George','Clooney'].
 nome(m-s,'Johnny Depp') --> ['Johnny','Depp'].
 nome(m-s,'Tommy Lee Jones') --> ['Tommy','Lee','Jones'].
 nome(m-s,'Viggo Mortensen') --> ['Viggo','Mortensen'].
+nome(f-s,'Cate Blanchett') --> ['Cate','Blanchett'].
+nome(f-s,'Julie Christie') --> ['Julie','Christie'].
+nome(f-s,'Marion Cotillard') --> ['Marion','Cotillard'].
+nome(f-s,'Laura Linney') --> ['Laura','Linney'].
+nome(f-s,'Ellen Page') --> ['Ellen','Page'].
 
 % Realizadores
 nome(m-s,'Julian Schnabel') --> ['Julian','Schnabel'].
@@ -244,6 +253,8 @@ nome(m-s,realizador) --> [realizador].
 nome(m-p,realizador) --> [realizadores].
 nome(m-s,nomeado) --> [nomeado].
 nome(m-p,nomeado) --> [nomeados].
+nome(f-s,nomeado) --> [nomeada].
+nome(f-p,nomeado) --> [nomeadas].
 
 % BASE DE CONHECIMENTO
 
@@ -257,6 +268,10 @@ filme('The Diving Bell and the Butterfly').
 filme('Sweeney Todd').
 filme('In the Valley of Elah').
 filme('Eastern Promises').
+filme('Elizabeth: The Golden Age').
+filme('Away from Her').
+filme('La môme').
+filme('The Savages').
 
 % Actores
 actor('George Clooney').
@@ -264,6 +279,11 @@ actor('Daniel Day-Lewis').
 actor('Johnny Depp').
 actor('Tommy Lee Jones').
 actor('Viggo Mortensen').
+actor('Cate Blanchett').
+actor('Julie Christie').
+actor('Marion Cotillard').
+actor('Laura Linney').
+actor('Ellen Page').
 
 % Realizadores
 realizador('Julian Schnabel').
@@ -306,6 +326,9 @@ ganhar('The Golden Compass','Melhores Efeitos Visuais').
  ganhar('Bill Westenhofer','Melhores Efeitos Visuais').
  ganhar('Ben Morris','Melhores Efeitos Visuais').
  ganhar('Trevor Wood','Melhores Efeitos Visuais').
+ 
+ganhar('Marion Cotillard','Melhor Actriz').
+ ganhar('La môme','Melhor Actriz').
 
 % Nomeados
 
@@ -352,6 +375,17 @@ nomeado('Transformers','Melhores Efeitos Visuais').
  nomeado('Scott Benza','Melhores Efeitos Visuais').
  nomeado('Russell Earl','Melhores Efeitos Visuais').
  %nomeado('John Frazier','Melhores Efeitos Visuais').
+ 
+nomeado('Cate Blanchett','Melhor Actriz').
+ nomeado('Elizabeth: The Golden Age','Melhor Actriz').
+nomeado('Julie Christie','Melhor Actriz').
+ nomeado('Away from Her','Melhor Actriz').
+nomeado('Marion Cotillard','Melhor Actriz').
+ nomeado('La môme','Melhor Actriz').
+nomeado('Laura Linney','Melhor Actriz').
+ nomeado('The Savages','Melhor Actriz').
+nomeado('Ellen Page','Melhor Actriz').
+ nomeado('Juno','Melhor Actriz').
 
 % Quem fez o quê
 
@@ -366,3 +400,8 @@ entrar('Daniel Day-Lewis','There Will Be Blood').
 entrar('Johnny Depp','Sweeney Todd').
 entrar('Tommy Lee Jones','In the Valley of Elah').
 entrar('Viggo Mortensen','Eastern Promises').
+entrar('Cate Blanchett','Elizabeth: The Golden Age').
+entrar('Julie Christie','Away from Her').
+entrar('Marion Cotillard','La môme').
+entrar('Laura Linney','The Savages').
+entrar('Ellen Page','Juno').
