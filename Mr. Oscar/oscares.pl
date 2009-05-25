@@ -74,7 +74,7 @@ verifica_frase_afirmativa -->
 sintagma_interrogativo(G-N,Pron,TipoSuj) -->
     pron_int(Pron),{Pron=que},
     sintagma_nominal(G-N,[TipoSuj]).
-
+    
 sintagma_interrogativo(_,Pron,TipoSuj) -->
     pron_int(Pron),
     {Pron=quem,TipoSuj=pessoa}.
@@ -82,7 +82,7 @@ sintagma_interrogativo(_,Pron,TipoSuj) -->
 sintagma_nominal(_-p,[Sujeito|R]) -->
      sintagma_nominal1(_,Sujeito),[e],
      sintagma_nominal(_,R).
-
+     
 sintagma_nominal(G-N,[Sujeito]) -->
      sintagma_nominal1(G-N,Sujeito).
 
@@ -157,11 +157,12 @@ prep(f-p) --> ['Nas'];[nas].
 
 pron_int(quem) --> ['Quem'];[quem].
 pron_int(que) --> ['Que'];[que].
+pron_int(quais) --> ['Quais'];[quais].
 
 verbo(s,[Sujeito],ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(p,[Sujeito],ganhar) --> [ganharam],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,[Sujeito],realizar) --> [realizou],{realizador(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,[Sujeito],entrar) --> [entrou],{actor(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,[Sujeito],realizar) --> [realizou],{pessoa(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,[Sujeito],entrar) --> [entrou],{pessoa(Sujeito);assert(erro(semantico)),!,fail}.
 verbo(s,_,ser) --> [foi].
 verbo(p,_,ser) --> [foram].
 
