@@ -34,8 +34,8 @@ faz_palavras([H|T],LChar,LPal):-
 % Validações
 
 valida_sujeito(Sujeito):-
-    filme(Sujeito);
-    actor(Sujeito);
+    filme(Sujeito),!;
+    actor(Sujeito,_),!;
     realizador(Sujeito).
 
 % Converter lista em resultados individuais
@@ -50,106 +50,126 @@ converte_em_resultados([H|T]):-
 
 ln(Frase):-
     transf_lista(Frase,LPal),
-        ( verifica_frase(LPal,[]);
-                ( (erro(semantico),write('Erro semântico!'),assert(resultado('Erro semântico')));
-                  (write('Erro sintático!'),assert(resultado('Erro sintático')))
-                )
-        ).
+    verifica(LPal).
 
-verifica_frase -->
-    verifica_frase_afirmativa;
-    verifica_frase_interrogativa.
+verifica(ListaPal):-
+    ( retractall(erro(semantico)) ; true ),
+    ( ( verifica_frase(Estrutura,ListaPal,[]),
+        write(Estrutura) )
+    ; ( erro(semantico), write('Erro semântico'),assert(resultado('Erro semântico')) )
+    ; write('Erro sintático'),assert(resultado('Erro sintático')) ).
 
-verifica_frase_interrogativa -->
-    sintagma_interrogativo(G-N,Pron,TipoSuj),
-    {Pron==quem,N=s;N=_},
-    sintagma_verbal(G-N,_,Accao,Objecto),
-    {resposta_interrogacao(Pron,TipoSuj,Accao,Objecto)}.
+% interrogativas
+verifica_frase(frase(SI,SV)) -->
+    sintagma_interrogativo(SI,Q,N,Accao1,Objecto1),
+    sintagma_verbal(SV,N,_,Accao,Objecto),
+    {resposta(Q,Accao1,Objecto1,Accao,Objecto)}.
 
-verifica_frase_afirmativa -->
-    sintagma_nominal(G-N,Sujeito),
-    sintagma_verbal(G-N,Sujeito,Accao,Objecto),
-    {resposta(Sujeito,Accao,Objecto)}.
+verifica_frase(frase(SI,SV)) -->
+    sintagma_interrogativo(SI,Q,_,Accao1,Objecto1),
+    { Objecto1=premio },
+    sintagma_verbal(SV,_,_,Accao,Objecto),
+    {resposta2(Q,Accao1,Objecto1,Accao,Objecto)}.
 
-sintagma_interrogativo(G-N,Pron,TipoSuj) -->
-    pron_int(_,Pron),{Pron=qual;Pron=que},
-    sintagma_nominal_int(G-N,TipoSuj,Pron).
+% afirmativa
+verifica_frase(frase(SN,SV)) -->
+    sintagma_nominal(SN,N,Sujeito),
+    sintagma_verbal(SV,N,Sujeito,Accao,Objecto),
+    {concorda(Accao,Sujeito,Objecto)}.
 
-sintagma_interrogativo(_,Pron,TipoSuj) -->
-    pron_int(_,Pron),
-    {Pron=quem,TipoSuj=pessoa}.
+sintagma_interrogativo(pronome_int(I),Q,N,Accao,Objecto) -->
+    pron_int(_-N,I,Q),
+    sintagma_nominal_int(SNI,N,Accao,Objecto).
 
-sintagma_nominal_int(G-N,Sujeito,Pron) -->
-    det(G-N),
-    nome(G-N,Sujeito).
+sintagma_interrogativo(pronome_int(I),Q,N,_,_) -->
+    pron_int(_-N,I,Q).
 
-sintagma_nominal_int(G-N,Sujeito,Pron) -->
-    det(G-N),
-    nome(G-N,Sujeito),
-    pron(_,que),{Pron=qual}.
+sintagma_nominal_int(sintg_nominal(det(D),nome(Nome)),N,_,Objecto) -->
+    det(G-N,D),
+    nome(G-N,Nome,Objecto).
+    
+sintagma_nominal_int(sintg_nominal(nome(Nome)),N,_,Objecto) -->
+    nome(G-N,Nome,Objecto).
 
-sintagma_nominal_int(G-N,Sujeito,Pron) -->
-    nome(G-N,Sujeito).
+sintagma_nominal(SN,p,[Sujeito,Sujeito2]) -->
+     sintagma_nominal1(SN1,N1,Sujeito1),[e],
+     sintagma_nominal1(SN2,N2,Sujeito2),
+     { SN1=..[_|L1],SN2=..[_|L2],
+       append(L1,[e|L2],L),
+       SN=..[sintg_nominal|L] }.
 
-sintagma_nominal(_-p,[Sujeito|R]) -->
-     sintagma_nominal1(_,Sujeito),[e],
-     sintagma_nominal(_,R).
+sintagma_nominal(SN,N,[Sujeito]) -->
+     sintagma_nominal1(SN,N,Sujeito).
 
-sintagma_nominal(G-N,[Sujeito]) -->
-     sintagma_nominal1(G-N,Sujeito).
+sintagma_nominal1(sintg_nominal(det(D),nome(Nome)),N,Sujeito) -->
+    det(G-N,D),
+    nome(G-N,Nome,Sujeito).
 
-sintagma_nominal1(G-N,Sujeito) -->
-    det(G-N),
-    nome(G-N,Sujeito).
+sintagma_nominal1(sintg_nominal(nome(Nome)),N,Sujeito) -->
+    nome(_-N,Nome,Sujeito).
 
-sintagma_nominal1(G-N,Sujeito) -->
-    nome(G-N,Sujeito).
+sintagma_verbal(sintg_verbal(verbo(V),SN,SP),N,_,Accao,Objecto) -->
+    verbo(N,V,_,ser),!,
+    sintagma_nominal(SN,N,[Accao]),
+    sintagma_prep(SP,Objecto).
 
-sintagma_verbal(G-N,_,Accao,Objecto) -->
-    verbo(N,_,ser),!,
-    nome(G-N,Accao),
-    sintagma_prep(Objecto).
+sintagma_verbal(sintg_verbal(verbo(V),SN,SP),N,Nome,Accao,Objecto) -->
+    verbo(N,V,Nome,Accao),
+    sintagma_nominal(SN,N,_),
+    sintagma_prep(SP,Objecto).
 
-sintagma_verbal(_-N,Sujeito,Accao,Objecto) -->
-    verbo(N,Sujeito,Accao),
-    sintagma_nominal(_,_),
-    sintagma_prep(Objecto).
+sintagma_verbal(sintg_verbal(verbo(V),SN),N,Nome,Accao,Objecto) -->
+    verbo(N,V,Nome,Accao),
+    sintagma_nominal(SN,N,[Objecto]).
+    
+sintagma_verbal(sintg_verbal(verbo(V),SP),N,Sujeito,Accao,Objecto) -->
+    verbo(N,V,Sujeito,Accao),
+    sintagma_prep(SP,Objecto).
 
-sintagma_verbal(_-N,Sujeito,Accao,Objecto) -->
-    verbo(N,Sujeito,Accao),
-    sintagma_nominal(_,[Objecto]).
-
-sintagma_verbal(_-N,Sujeito,Accao,Objecto) -->
-    verbo(N,Sujeito,Accao),
-    sintagma_prep(Objecto).
-
-sintagma_prep(Objecto) -->
-    prep(G-N),
-    sintagma_nominal(G-N,[Objecto]).
+sintagma_prep(sintg_prep(prep(P),SN),Objecto) -->
+    prep(_-N,P),
+    sintagma_nominal(SN,N,[Objecto]).
 
 % RESPOSTAS
 
-valida_factos([Sujeito|R],Accao,Objecto):-
-    Facto=..[Accao,Sujeito,Objecto],
-    Facto,
-    valida_factos(R,Accao,Objecto).
+% Interrogação
 
-valida_factos([Sujeito],Accao,Objecto):-
-    Facto=..[Accao,Sujeito,Objecto],
-    Facto.
+resposta(Q,Accao1,Objecto1,Accao,Objecto):-
+    var(Accao1), Predicado=..[Accao, Sujeito,Objecto],
+    findall(Sujeito, Predicado,Lista),
+    ( ( Q=qual,write(Lista) )
+    ; ( length(Lista,Nlista),write(Nlista) )
+    ), nl.
 
-resposta(Sujeito,Accao,Objecto):-
-    (valida_factos(Sujeito,Accao,Objecto),
-    write('Sim'),assert(resultado('Sim')));
-    write('Não'),assert(resultado('Não')).
+resposta(Q,Accao1,Objecto1,Accao,Objecto):-
+    nonvar(Accao1),
+    Predicado=..[Accao,Sujeito,Objecto],
+    Predicado1=..[Accao1,Sujeito,Objecto1],
+    findall(Sujeito, ( Predicado, Predicado1 ), Lista),
+    ( ( Q=qual,write(Lista) )
+    ; ( length(Lista,Nlista),write(Nlista) )
+    ), nl.
+    
+resposta2(Q,Accao1,Objecto1,Accao,Objecto):-
+    var(Accao1), Predicado=..[Accao, Objecto,Sujeito],
+    findall(Sujeito, Predicado,Lista),
+    ( ( Q=qual,write(Lista) )
+    ; ( length(Lista,Nlista),write(Nlista) )
+    ), nl.
 
-resposta_interrogacao(Pron,TipoSuj,Accao,Objecto):-
-    Facto=..[Accao,Sujeito,Objecto],
-    Validacao=..[TipoSuj,Sujeito],
-    findall(Sujeito,(Facto,Validacao),Resultados),
-    %Pron==quanto,length(Resultados,Len),write(Len);
-    write(Resultados),converte_em_resultados(Resultados);
-    write('Sem Resultados'),assert(resultado('Sem Resultados')).
+% Afirmação
+
+concorda(Accao,[Sujeito1|OSuj],Objecto):-
+    ( Predicado=..[Accao,Sujeito1,Objecto], Predicado,
+    concorda(Accao,OSuj,Objecto) )
+    ; write('Não'),nl,assert(resultado('Não')).
+
+concorda(Accao,Sujeito,Objecto):-
+    ( ( Predicado=..[Accao,Sujeito,Objecto],Predicado,
+        write('Sim'),nl,assert(resultado('Sim')) )
+    ; write('Não'),nl,assert(resultado('Não') ).
+
+concorda(_,[],_):- write('Sim'),nl,assert(resultado('Sim')).
 
 % GRAMÁTICA
 
@@ -170,19 +190,19 @@ prep(f-p,nas) --> ['Nas'];[nas].
 
 pron(_,que) --> [que].
 
-pron_int(s-_,quem,qual) --> ['Quem'];[quem].
-pron_int(s-_,qual,qual) --> ['Qual'];[qual].
-pron_int(p-_,quais,qual) --> ['Quais'];[quais].
-pron_int(_,que) --> ['Que'];[que].
-pron_int(p-m,quantos,quant) --> ['Quantos'];[quantos].
-pron_int(p-f,quantas,quant) --> ['Quantas'];[quantas].
+pron_int(_-s,quem,qual) --> ['Quem'];[quem].
+pron_int(_-s,qual,qual) --> ['Qual'];[qual].
+pron_int(_-p,quais,qual) --> ['Quais'];[quais].
+pron_int(_,que,qual) --> ['Que'];[que].
+pron_int(m-p,quantos,quant) --> ['Quantos'];[quantos].
+pron_int(f-p,quantas,quant) --> ['Quantas'];[quantas].
 
-verbo(s,[Sujeito],ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(p,[Sujeito],ganhar) --> [ganharam],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,[Sujeito],realizar) --> [realizou],{pessoa(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,[Sujeito],entrar) --> [entrou],{pessoa(Sujeito);assert(erro(semantico)),!,fail}.
-verbo(s,_,ser) --> [foi].
-verbo(p,_,ser) --> [foram].
+verbo(s,ganhou,[Sujeito],ganhar) --> [ganhou],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(p,ganharam,[Sujeito],ganhar) --> [ganharam],{valida_sujeito(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,realizou,[Sujeito],realizar) --> [realizou],{pessoa(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,entrou,[Sujeito],entrar) --> [entrou],{pessoa(Sujeito);assert(erro(semantico)),!,fail}.
+verbo(s,foi,_,ser) --> [foi].
+verbo(p,foram,_,ser) --> [foram].
 
 % Filmes
 nome(m-s,'No Country for Old Men','No Country for Old Men') --> ['No','Country',for,'Old','Men'].
@@ -257,23 +277,24 @@ nome(f-s,'Melhor Curta Metragem de Animação','Melhor Curta Metragem de Animação'
 nome(m-s,'Óscar Honorário','Óscar Honorário') --> [óscar,honorário].
 
 % Vocabulário geral
-nome(m-s,premio) --> [prémio].
-nome(m-s,oscar) --> [óscar].
-nome(m-p,filme) --> [filmes].
-nome(m-s,filme) --> [filme].
-nome(m-p,actor) --> [actores].
-nome(m-s,actor) --> [actor].
-nome(f-p,actor) --> [actrizes].
-nome(f-s,actor) --> [actriz].
-nome(f-s,pessoa) --> [pessoa].
-nome(f-p,pessoa) --> [pessoas].
-nome(m-s,realizador) --> [realizador].
-nome(m-p,realizador) --> [realizadores].
-nome(m-s,nomeado) --> [nomeado].
-nome(m-p,nomeado) --> [nomeados].
-nome(f-s,nomeado) --> [nomeada].
-nome(f-p,nomeado) --> [nomeadas].
-nome(f-p,nomeacoes) --> [nomeações].
+nome(m-s,premio,premio) --> [prémio].
+nome(m-p,premios,premio) --> [prémios].
+nome(m-s,oscar,oscar) --> [óscar].
+nome(m-p,filmes,filme) --> [filmes].
+nome(m-s,filme,filme) --> [filme].
+nome(m-p,actores,actor) --> [actores].
+nome(m-s,actor,actor) --> [actor].
+nome(f-p,actrizes,actor) --> [actrizes].
+nome(f-s,actriz,actor) --> [actriz].
+nome(f-s,pessoa,pessoa) --> [pessoa].
+nome(f-p,pessoas,pessoa) --> [pessoas].
+nome(m-s,realizador,realizador) --> [realizador].
+nome(m-p,realizadores,realizador) --> [realizadores].
+nome(m-s,nomeado,nomeado) --> [nomeado].
+nome(m-p,nomeados,nomeado) --> [nomeados].
+nome(f-s,nomeada,nomeado) --> [nomeada].
+nome(f-p,nomeadas,nomeado) --> [nomeadas].
+nome(f-p,nomeacoes,nomeacoes) --> [nomeações].
 
 % BASE DE CONHECIMENTO
 
@@ -293,16 +314,16 @@ filme('La môme').
 filme('The Savages').
 
 % Actores
-actor('George Clooney').
-actor('Daniel Day-Lewis').
-actor('Johnny Depp').
-actor('Tommy Lee Jones').
-actor('Viggo Mortensen').
-actor('Cate Blanchett').
-actor('Julie Christie').
-actor('Marion Cotillard').
-actor('Laura Linney').
-actor('Ellen Page').
+actor('George Clooney',_).
+actor('Daniel Day-Lewis',_).
+actor('Johnny Depp',_).
+actor('Tommy Lee Jones',_).
+actor('Viggo Mortensen',_).
+actor('Cate Blanchett',_).
+actor('Julie Christie',_).
+actor('Marion Cotillard',_).
+actor('Laura Linney',_).
+actor('Ellen Page',_).
 
 % Realizadores
 realizador('Julian Schnabel').
