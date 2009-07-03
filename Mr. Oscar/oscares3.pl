@@ -1,4 +1,4 @@
-             %
+%
 % OSCARES 2008
 % Prémios da Academia de Artes e Ciências Cinematográficas
 %
@@ -12,6 +12,7 @@
 
 :-dynamic erro/1.
 :-dynamic resultado/1.
+:-dynamic contexto/2.
 
 % PREDICADOS AUXILIARES
 
@@ -59,23 +60,33 @@ verifica(ListaPal):-
     ; ( erro(semantico), write('Erro semântico'),assert(resultado('Erro semântico')) )
     ; write('Erro sintático'),assert(resultado('Erro sintático')) ).
 
-% interrogativas
+% Interrogativas
+verifica_frase(frase(SI,SV)) -->
+    sintagma_interrogativo(SI,Q,_,Accao1,Objecto1),
+    { Objecto1==premio;Objecto1==oscar },
+    sintagma_verbal(SV,_,_,Accao,Objecto),
+    {resposta2(Q,Accao1,Objecto1,Accao,Objecto)}.
+
 verifica_frase(frase(SI,SV)) -->
     sintagma_interrogativo(SI,Q,N,Accao1,Objecto1),
     sintagma_verbal(SV,N,_,Accao,Objecto),
     {resposta(Q,Accao1,Objecto1,Accao,Objecto)}.
+	
+% Elipse
+verifica_frase(frase(SP)) -->
+	['E'],sintagma_prep(SP,Objecto),
+	{ contexto(Q,Accao),
+	  resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
 
-verifica_frase(frase(SI,SV)) -->
-    sintagma_interrogativo(SI,Q,_,Accao1,Objecto1),
-    { Objecto1=premio },
-    sintagma_verbal(SV,_,_,Accao,Objecto),
-    {resposta2(Q,Accao1,Objecto1,Accao,Objecto)}.
-
-% afirmativa
-verifica_frase(frase(SN,SV)) -->
-    sintagma_nominal(SN,N,Sujeito),
-    sintagma_verbal(SV,N,Sujeito,Accao,Objecto),
-    {concorda(Accao,Sujeito,Objecto)}.
+verifica_frase(frase(SN)) -->
+	['E'],sintagma_nominal(SN,_,[Objecto]),
+	{ contexto(Q,Accao),
+	  resposta2(Q,Accao1,Objecto1,Accao,Objecto) }.
+	  
+verifica_frase(frase(SN)) -->
+	['E'],sintagma_nominal(SN,_,[Objecto]),
+	{ contexto(Q,Accao),
+	  resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
 
 sintagma_interrogativo(pronome_int(I),Q,N,Accao,Objecto) -->
     pron_int(_-N,I,Q),
@@ -91,6 +102,16 @@ sintagma_nominal_int(sintg_nominal(det(D),nome(Nome)),N,_,Objecto) -->
 sintagma_nominal_int(sintg_nominal(nome(Nome)),N,_,Objecto) -->
     nome(G-N,Nome,Objecto).
 
+sintagma_prep(sintg_prep(prep(P),SN),Objecto) -->
+	prep(_-N,P),
+    sintagma_nominal(SN,N,[Objecto]).
+	
+% Afirmativa
+verifica_frase(frase(SN,SV)) -->
+    sintagma_nominal(SN,N,Sujeito),
+    sintagma_verbal(SV,N,Sujeito,Accao,Objecto),
+    {concorda(Accao,Sujeito,Objecto)}.
+	
 sintagma_nominal(SN,p,[Sujeito,Sujeito2]) -->
      sintagma_nominal1(SN1,N1,Sujeito1),[e],
      sintagma_nominal1(SN2,N2,Sujeito2),
@@ -109,14 +130,14 @@ sintagma_nominal1(sintg_nominal(nome(Nome)),N,Sujeito) -->
     nome(_-N,Nome,Sujeito).
 
 sintagma_verbal(sintg_verbal(verbo(V),SN,SP),N,_,Accao,Objecto) -->
-    verbo(N,V,_,ser),!,
+	verbo(N,V,_,ser),!,
     sintagma_nominal(SN,N,[Accao]),
-    sintagma_prep(SP,Objecto).
+	sintagma_prep(SP,Objecto).
 
 sintagma_verbal(sintg_verbal(verbo(V),SN,SP),N,Nome,Accao,Objecto) -->
     verbo(N,V,Nome,Accao),
     sintagma_nominal(SN,N,_),
-    sintagma_prep(SP,Objecto).
+	sintagma_prep(SP,Objecto).
 
 sintagma_verbal(sintg_verbal(verbo(V),SN),N,Nome,Accao,Objecto) -->
     verbo(N,V,Nome,Accao),
@@ -126,17 +147,14 @@ sintagma_verbal(sintg_verbal(verbo(V),SP),N,Sujeito,Accao,Objecto) -->
     verbo(N,V,Sujeito,Accao),
     sintagma_prep(SP,Objecto).
 
-sintagma_prep(sintg_prep(prep(P),SN),Objecto) -->
-    prep(_-N,P),
-    sintagma_nominal(SN,N,[Objecto]).
-
 % RESPOSTAS
 
 % Interrogação
 
 resposta(Q,Accao1,Objecto1,Accao,Objecto):-
-    var(Accao1), Predicado=..[Accao, Sujeito,Objecto],
-    findall(Sujeito, Predicado,Lista),
+    ( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
+	var(Accao1), Predicado=..[Accao, Sujeito,Objecto],
+    findall(Sujeito,Predicado,Lista),
     ( ( Q=qual,write(Lista) )
     ; ( length(Lista,Nlista),write(Nlista) )
     ), nl.
@@ -151,6 +169,7 @@ resposta(Q,Accao1,Objecto1,Accao,Objecto):-
     ), nl.
     
 resposta2(Q,Accao1,Objecto1,Accao,Objecto):-
+	( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
     var(Accao1), Predicado=..[Accao, Objecto,Sujeito],
     findall(Sujeito, Predicado,Lista),
     ( ( Q=qual,write(Lista) )
@@ -167,7 +186,7 @@ concorda(Accao,[Sujeito1|OSuj],Objecto):-
 concorda(Accao,Sujeito,Objecto):-
     ( ( Predicado=..[Accao,Sujeito,Objecto],Predicado,
         write('Sim'),nl,assert(resultado('Sim')) )
-    ; write('Não'),nl,assert(resultado('Não') ).
+    ; write('Não'),nl,assert(resultado('Não')) ).
 
 concorda(_,[],_):- write('Sim'),nl,assert(resultado('Sim')).
 
@@ -187,6 +206,8 @@ prep(m-s,no) --> ['No'];[no].
 prep(m-p,nos) --> ['Nos'];[nos].
 prep(f-s,na) --> ['Na'];[na].
 prep(f-p,nas) --> ['Nas'];[nas].
+prep(_,por) --> [por].
+prep(m-p,pelos) --> [pelos].
 
 pron(_,que) --> [que].
 
@@ -212,14 +233,17 @@ nome(m-s,'Michael Clayton','Michael Clayton') --> ['Michael','Clayton'].
 nome(m-s,'Juno','Juno') --> ['Juno'].
 nome(m-s,'The Diving Bell and the Butterfly','The Diving Bell and the Butterfly') -->
     ['The','Divinity','Bell',and,the,'Butterfly'];
-    ['The','Divinity','Bell','And','The','Butterfly'].
-nome(m-_,'Pirates of the Caribbean','Pirates of the Caribbean') --> ['Pirates',of,the,'Caribbean'];['Pirates','Of','The','Caribbean'].
+	['The','Divinity','Bell','And','The','Butterfly'].
+nome(m-_,'Pirates of the Caribbean','Pirates of the Caribbean') -->
+	['Pirates',of,the,'Caribbean'];['Pirates','Of','The','Caribbean'].
 nome(m-_,'Transformers','Transformers') --> ['Transformers'].
 nome(m-s,'Sweeney Todd','Sweeney Todd') --> ['Sweeney','Todd'].
-nome(m-s,'In the Valley of Elah','In the Valley of Elah') --> ['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
+nome(m-s,'In the Valley of Elah','In the Valley of Elah') --> 
+	['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
 nome(m-s,'Eastern Promises','Eastern Promises') --> ['Eastern','Promises'].
 nome(m-s,'Atonement','Atonement') --> ['Atonement'].
-nome(m-s,'Elizabeth: The Golden Age','Elizabeth: The Golden Age') --> ['Elizabeth:','The','Golden','Age'].
+nome(m-s,'Elizabeth: The Golden Age','Elizabeth: The Golden Age') --> 
+	['Elizabeth:','The','Golden','Age'].
 nome(m-s,'Away from Her','Away from Her') --> ['Away',from,'Her'].
 nome(m-s,'La môme','La môme') --> ['La',môme];['La','Môme'].
 nome(m-s,'The Savages','The Savages') --> ['The','Savages'].
@@ -259,7 +283,8 @@ nome(f-s,'Melhor Actriz Secundária','Melhor Actriz Secundária') --> [melhor,actr
 nome(m-s,'Melhor Argumento Original','Melhor Argumento Original') --> [melhor,argumento,original].
 nome(m-s,'Melhor Argumento Adaptado','Melhor Argumento Adaptado') --> [melhor,argumento,adaptado].
 nome(m-s,'Melhor Filme de Animação','Melhor Filme de Animação') --> [melhor,filme,de,animação].
-nome(m-s,'Melhor Filme em Lingua Estrangeira','Melhor Filme em Lingua Estrangeira') --> [melhor,filme,em,lingua,estrangeira].
+nome(m-s,'Melhor Filme em Lingua Estrangeira','Melhor Filme em Lingua Estrangeira') -->
+	[melhor,filme,em,lingua,estrangeira].
 nome(f-s,'Melhor Fotografia','Melhor Fotografia') --> [melhor,fotografia].
 nome(f-s,'Melhor Direcção Artística','Melhor Direcção Artística') --> [melhor,direcção,artística].
 nome(m-s,'Melhor Guarda-Roupa','Melhor Guarda-Roupa') --> [melhor,guarda-roupa].
@@ -271,15 +296,18 @@ nome(f-s,'Melhor Mistura de Som','Melhor Mistura de Som') --> [melhor,mistura,de
 nome(f-s,'Melhor Banda Sonora','Melhor Banda Sonora') --> [melhor,banda,sonora].
 nome(f-s,'Melhor Canção Original','Melhor Canção Original') --> [melhor,canção,original].
 nome(m-s,'Melhor Documentário','Melhor Documentário') --> [melhor,documentário].
-nome(m-s,'Melhor Documentário em Curta-Metragem','Melhor Documentário em Curta-Metragem') --> [melhor,documentário,em,curta-metragem].
+nome(m-s,'Melhor Documentário em Curta-Metragem','Melhor Documentário em Curta-Metragem') --> 
+	[melhor,documentário,em,curta-metragem].
 nome(f-s,'Melhor Curta Metragem','Melhor Curta Metragem') --> [melhor,curta-metragem].
-nome(f-s,'Melhor Curta Metragem de Animação','Melhor Curta Metragem de Animação') --> [melhor,curta-metragem,de,animação].
+nome(f-s,'Melhor Curta Metragem de Animação','Melhor Curta Metragem de Animação') --> 
+	[melhor,curta-metragem,de,animação].
 nome(m-s,'Óscar Honorário','Óscar Honorário') --> [óscar,honorário].
 
 % Vocabulário geral
 nome(m-s,premio,premio) --> [prémio].
 nome(m-p,premios,premio) --> [prémios].
 nome(m-s,oscar,oscar) --> [óscar].
+nome(m-p,oscares,oscar) --> [óscares].
 nome(m-p,filmes,filme) --> [filmes].
 nome(m-s,filme,filme) --> [filme].
 nome(m-p,actores,actor) --> [actores].
@@ -290,6 +318,7 @@ nome(f-s,pessoa,pessoa) --> [pessoa].
 nome(f-p,pessoas,pessoa) --> [pessoas].
 nome(m-s,realizador,realizador) --> [realizador].
 nome(m-p,realizadores,realizador) --> [realizadores].
+nome(m-s,realizado,realizado) --> [realizado].
 nome(m-s,nomeado,nomeado) --> [nomeado].
 nome(m-p,nomeados,nomeado) --> [nomeados].
 nome(f-s,nomeada,nomeado) --> [nomeada].
@@ -346,7 +375,7 @@ pessoa('Scott Benza').
 pessoa('Russell Earl').
 
 pessoa(Sujeito):-
-    actor(Sujeito);
+    actor(Sujeito,_);
     realizador(Sujeito).
 
 % ACÇÕES
@@ -436,6 +465,8 @@ realizar('Jason Reitman','Juno').
 realizar('Tony Gilroy','Michael Clayton').
 realizar('Irmãos Coen','No Country for Old Men').
 realizar('Paul Thomas Anderson','There Will Be Blood').
+
+realizado(Filme,Realizador):-realizar(Realizador,Filme).
 
 entrar('George Clooney','Michael Clayton').
 entrar('Daniel Day-Lewis','There Will Be Blood').
