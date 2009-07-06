@@ -9,6 +9,7 @@
 
 :-abolish(resultado/1).
 :-abolish(erro/1).
+:-abolish(contexto/2).
 
 :-dynamic erro/1.
 :-dynamic resultado/1.
@@ -71,22 +72,22 @@ verifica_frase(frase(SI,SV)) -->
     sintagma_interrogativo(SI,Q,N,Accao1,Objecto1),
     sintagma_verbal(SV,N,_,Accao,Objecto),
     {resposta(Q,Accao1,Objecto1,Accao,Objecto)}.
-	
+        
 % Elipse
 verifica_frase(frase(SP)) -->
-	['E'],sintagma_prep(SP,Objecto),
-	{ contexto(Q,Accao),
-	  resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
+        ['E'],sintagma_prep(SP,Objecto),
+        { contexto(Q,Accao),
+          resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
 
 verifica_frase(frase(SN)) -->
-	['E'],sintagma_nominal(SN,_,[Objecto]),
-	{ contexto(Q,Accao),
-	  resposta2(Q,Accao1,Objecto1,Accao,Objecto) }.
-	  
+        ['E'],sintagma_nominal(SN,_,[Objecto]),
+        { contexto(Q,Accao),
+          resposta2(Q,Accao1,Objecto1,Accao,Objecto) }.
+          
 verifica_frase(frase(SN)) -->
-	['E'],sintagma_nominal(SN,_,[Objecto]),
-	{ contexto(Q,Accao),
-	  resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
+        ['E'],sintagma_nominal(SN,_,[Objecto]),
+        { contexto(Q,Accao),
+          resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
 
 sintagma_interrogativo(pronome_int(I),Q,N,Accao,Objecto) -->
     pron_int(_-N,I,Q),
@@ -103,15 +104,15 @@ sintagma_nominal_int(sintg_nominal(nome(Nome)),N,_,Objecto) -->
     nome(G-N,Nome,Objecto).
 
 sintagma_prep(sintg_prep(prep(P),SN),Objecto) -->
-	prep(_-N,P),
+        prep(_-N,P),
     sintagma_nominal(SN,N,[Objecto]).
-	
+        
 % Afirmativa
 verifica_frase(frase(SN,SV)) -->
     sintagma_nominal(SN,N,Sujeito),
     sintagma_verbal(SV,N,Sujeito,Accao,Objecto),
     {concorda(Accao,Sujeito,Objecto)}.
-	
+        
 sintagma_nominal(SN,p,[Sujeito,Sujeito2]) -->
      sintagma_nominal1(SN1,N1,Sujeito1),[e],
      sintagma_nominal1(SN2,N2,Sujeito2),
@@ -130,14 +131,14 @@ sintagma_nominal1(sintg_nominal(nome(Nome)),N,Sujeito) -->
     nome(_-N,Nome,Sujeito).
 
 sintagma_verbal(sintg_verbal(verbo(V),SN,SP),N,_,Accao,Objecto) -->
-	verbo(N,V,_,ser),!,
+        verbo(N,V,_,ser),!,
     sintagma_nominal(SN,N,[Accao]),
-	sintagma_prep(SP,Objecto).
+        sintagma_prep(SP,Objecto).
 
 sintagma_verbal(sintg_verbal(verbo(V),SN,SP),N,Nome,Accao,Objecto) -->
     verbo(N,V,Nome,Accao),
     sintagma_nominal(SN,N,_),
-	sintagma_prep(SP,Objecto).
+        sintagma_prep(SP,Objecto).
 
 sintagma_verbal(sintg_verbal(verbo(V),SN),N,Nome,Accao,Objecto) -->
     verbo(N,V,Nome,Accao),
@@ -153,7 +154,7 @@ sintagma_verbal(sintg_verbal(verbo(V),SP),N,Sujeito,Accao,Objecto) -->
 
 resposta(Q,Accao1,Objecto1,Accao,Objecto):-
     ( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
-	var(Accao1), Predicado=..[Accao, Sujeito,Objecto],
+        var(Accao1), Predicado=..[Accao, Sujeito,Objecto],
     findall(Sujeito,Predicado,Lista),
     ( ( Q=qual,write(Lista) )
     ; ( length(Lista,Nlista),write(Nlista) )
@@ -169,7 +170,7 @@ resposta(Q,Accao1,Objecto1,Accao,Objecto):-
     ), nl.
     
 resposta2(Q,Accao1,Objecto1,Accao,Objecto):-
-	( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
+        ( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
     var(Accao1), Predicado=..[Accao, Objecto,Sujeito],
     findall(Sujeito, Predicado,Lista),
     ( ( Q=qual,write(Lista) )
@@ -233,17 +234,17 @@ nome(m-s,'Michael Clayton','Michael Clayton') --> ['Michael','Clayton'].
 nome(m-s,'Juno','Juno') --> ['Juno'].
 nome(m-s,'The Diving Bell and the Butterfly','The Diving Bell and the Butterfly') -->
     ['The','Divinity','Bell',and,the,'Butterfly'];
-	['The','Divinity','Bell','And','The','Butterfly'].
+        ['The','Divinity','Bell','And','The','Butterfly'].
 nome(m-_,'Pirates of the Caribbean','Pirates of the Caribbean') -->
-	['Pirates',of,the,'Caribbean'];['Pirates','Of','The','Caribbean'].
+        ['Pirates',of,the,'Caribbean'];['Pirates','Of','The','Caribbean'].
 nome(m-_,'Transformers','Transformers') --> ['Transformers'].
 nome(m-s,'Sweeney Todd','Sweeney Todd') --> ['Sweeney','Todd'].
 nome(m-s,'In the Valley of Elah','In the Valley of Elah') --> 
-	['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
+        ['In',the,'Valley',of,'Elah'];['In','The','Valley','Of','Elah'].
 nome(m-s,'Eastern Promises','Eastern Promises') --> ['Eastern','Promises'].
 nome(m-s,'Atonement','Atonement') --> ['Atonement'].
 nome(m-s,'Elizabeth: The Golden Age','Elizabeth: The Golden Age') --> 
-	['Elizabeth:','The','Golden','Age'].
+        ['Elizabeth:','The','Golden','Age'].
 nome(m-s,'Away from Her','Away from Her') --> ['Away',from,'Her'].
 nome(m-s,'La môme','La môme') --> ['La',môme];['La','Môme'].
 nome(m-s,'The Savages','The Savages') --> ['The','Savages'].
@@ -284,7 +285,7 @@ nome(m-s,'Melhor Argumento Original','Melhor Argumento Original') --> [melhor,ar
 nome(m-s,'Melhor Argumento Adaptado','Melhor Argumento Adaptado') --> [melhor,argumento,adaptado].
 nome(m-s,'Melhor Filme de Animação','Melhor Filme de Animação') --> [melhor,filme,de,animação].
 nome(m-s,'Melhor Filme em Lingua Estrangeira','Melhor Filme em Lingua Estrangeira') -->
-	[melhor,filme,em,lingua,estrangeira].
+        [melhor,filme,em,lingua,estrangeira].
 nome(f-s,'Melhor Fotografia','Melhor Fotografia') --> [melhor,fotografia].
 nome(f-s,'Melhor Direcção Artística','Melhor Direcção Artística') --> [melhor,direcção,artística].
 nome(m-s,'Melhor Guarda-Roupa','Melhor Guarda-Roupa') --> [melhor,guarda-roupa].
@@ -297,10 +298,10 @@ nome(f-s,'Melhor Banda Sonora','Melhor Banda Sonora') --> [melhor,banda,sonora].
 nome(f-s,'Melhor Canção Original','Melhor Canção Original') --> [melhor,canção,original].
 nome(m-s,'Melhor Documentário','Melhor Documentário') --> [melhor,documentário].
 nome(m-s,'Melhor Documentário em Curta-Metragem','Melhor Documentário em Curta-Metragem') --> 
-	[melhor,documentário,em,curta-metragem].
+        [melhor,documentário,em,curta-metragem].
 nome(f-s,'Melhor Curta Metragem','Melhor Curta Metragem') --> [melhor,curta-metragem].
 nome(f-s,'Melhor Curta Metragem de Animação','Melhor Curta Metragem de Animação') --> 
-	[melhor,curta-metragem,de,animação].
+        [melhor,curta-metragem,de,animação].
 nome(m-s,'Óscar Honorário','Óscar Honorário') --> [óscar,honorário].
 
 % Vocabulário geral
