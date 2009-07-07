@@ -72,26 +72,32 @@ verifica_frase(frase(SI,SV)) -->
     sintagma_interrogativo(SI,Q,N,Accao1,Objecto1),
     sintagma_verbal(SV,N,_,Accao,Objecto),
     {resposta(Q,Accao1,Objecto1,Accao,Objecto)}.
-        
+
 % Elipse
 verifica_frase(frase(SP)) -->
         ['E'],sintagma_prep(SP,Objecto),
         { contexto(Q,Accao),
-          resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
+          resposta(Q,_,_,Accao,Objecto) }.
 
 verifica_frase(frase(SN)) -->
         ['E'],sintagma_nominal(SN,_,[Objecto]),
         { contexto(Q,Accao),
-          resposta2(Q,Accao1,Objecto1,Accao,Objecto) }.
+          resposta2(Q,_,_,Accao,Objecto) }.
           
 verifica_frase(frase(SN)) -->
         ['E'],sintagma_nominal(SN,_,[Objecto]),
         { contexto(Q,Accao),
-          resposta(Q,Accao1,Objecto1,Accao,Objecto) }.
+          resposta(Q,_,_,Accao,Objecto) }.
 
+% Afirmativa
+verifica_frase(frase(SN,SV)) -->
+    sintagma_nominal(SN,N,Sujeito),
+    sintagma_verbal(SV,N,Sujeito,Accao,Objecto),
+    {concorda(Accao,Sujeito,Objecto)}.
+		  
 sintagma_interrogativo(pronome_int(I),Q,N,Accao,Objecto) -->
     pron_int(_-N,I,Q),
-    sintagma_nominal_int(SNI,N,Accao,Objecto).
+    sintagma_nominal_int(_,N,Accao,Objecto).
 
 sintagma_interrogativo(pronome_int(I),Q,N,_,_) -->
     pron_int(_-N,I,Q).
@@ -101,21 +107,15 @@ sintagma_nominal_int(sintg_nominal(det(D),nome(Nome)),N,_,Objecto) -->
     nome(G-N,Nome,Objecto).
     
 sintagma_nominal_int(sintg_nominal(nome(Nome)),N,_,Objecto) -->
-    nome(G-N,Nome,Objecto).
+    nome(_-N,Nome,Objecto).
 
 sintagma_prep(sintg_prep(prep(P),SN),Objecto) -->
         prep(_-N,P),
     sintagma_nominal(SN,N,[Objecto]).
         
-% Afirmativa
-verifica_frase(frase(SN,SV)) -->
-    sintagma_nominal(SN,N,Sujeito),
-    sintagma_verbal(SV,N,Sujeito,Accao,Objecto),
-    {concorda(Accao,Sujeito,Objecto)}.
-        
-sintagma_nominal(SN,p,[Sujeito,Sujeito2]) -->
-     sintagma_nominal1(SN1,N1,Sujeito1),[e],
-     sintagma_nominal1(SN2,N2,Sujeito2),
+sintagma_nominal(SN,p,[Sujeito1,Sujeito2]) -->
+     sintagma_nominal1(SN1,_,Sujeito1),[e],
+     sintagma_nominal1(SN2,_,Sujeito2),
      { SN1=..[_|L1],SN2=..[_|L2],
        append(L1,[e|L2],L),
        SN=..[sintg_nominal|L] }.
@@ -152,7 +152,7 @@ sintagma_verbal(sintg_verbal(verbo(V),SP),N,Sujeito,Accao,Objecto) -->
 
 % Interrogação
 
-resposta(Q,Accao1,Objecto1,Accao,Objecto):-
+resposta(Q,Accao1,_,Accao,Objecto):-
     ( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
         var(Accao1), Predicado=..[Accao, Sujeito,Objecto],
     findall(Sujeito,Predicado,Lista),
@@ -169,7 +169,7 @@ resposta(Q,Accao1,Objecto1,Accao,Objecto):-
     ; ( length(Lista,Nlista),write(Nlista) )
     ), nl.
     
-resposta2(Q,Accao1,Objecto1,Accao,Objecto):-
+resposta2(Q,Accao1,_,Accao,Objecto):-
         ( retractall(contexto(_,_)),assert(contexto(Q,Accao)) ),
     var(Accao1), Predicado=..[Accao, Objecto,Sujeito],
     findall(Sujeito, Predicado,Lista),
