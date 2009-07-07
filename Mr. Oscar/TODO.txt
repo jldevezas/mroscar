@@ -6,3 +6,4 @@ PRIORIDADE MÉDIA
 
 - Que actriz ganhou o prémio de melhor realizador (Detectar TipoSuj)
 - Quais são os filmes nomeados para melhor filme
+- Sintagma Nominal Interrogativo ignora o parâmetro SNI
