@@ -185,6 +185,8 @@ resposta2(Q,Accao1,_,Accao,Objecto):-
 
 % Afirmação
 
+concorda(_,[],_):- write('Sim'),nl,assert(resultado('Sim')).
+
 concorda(Accao,[Sujeito1|OSuj],Objecto):-
     ( Predicado=..[Accao,Sujeito1,Objecto], Predicado,
     concorda(Accao,OSuj,Objecto) )
@@ -194,8 +196,6 @@ concorda(Accao,Sujeito,Objecto):-
     ( ( Predicado=..[Accao,Sujeito,Objecto],Predicado,
         write('Sim'),nl,assert(resultado('Sim')) )
     ; write('Não'),nl,assert(resultado('Não')) ).
-
-concorda(_,[],_):- write('Sim'),nl,assert(resultado('Sim')).
 
 % GRAMÁTICA
 
