@@ -1,10 +1,10 @@
 PRIORIDADE MÁXIMA
 
 V Que prémios ganhou o No Country for Old Men
-- Quantas nomeações teve o No Country for Old Men
+V Quantas nomeações teve o No Country for Old Men (Quantas _foram_ as nomeações do...)
 
 PRIORIDADE MÉDIA
 
-- Que actriz ganhou o prémio de melhor realizador (Detectar TipoSuj)
-- Quais são os filmes nomeados para melhor filme
-- Sintagma Nominal Interrogativo ignora o parâmetro SNI
+V Que actriz ganhou o prémio de melhor realizador (Detectar TipoSuj) (Qual a actriz...)
+V Quais são os filmes nomeados para melhor filme (Quais são os nomeados para...)
+V Sintagma Nominal Interrogativo ignora o parâmetro SNI
